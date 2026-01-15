@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone, Mail, MapPin } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
 const navLinks = [
@@ -14,33 +16,46 @@ const navLinks = [
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const element = document.querySelector(href);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+    setIsOpen(false);
+  };
+
+  const handleGetStarted = () => {
+    const contactSection = document.querySelector("#contact");
+    if (contactSection) {
+      const headerOffset = 80;
+      const elementPosition = contactSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-      {/* Top bar */}
-      <div className="hidden md:block bg-secondary py-2">
-        <div className="container mx-auto px-4 flex justify-between items-center text-sm">
-          <div className="flex items-center gap-6 text-secondary-foreground/80">
-            <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              Gondia, Maharashtra 441911
-            </span>
-            <span className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-primary" />
-              sdmtechnologies.pvtltd@gmail.com
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-secondary-foreground/80">
-            <Phone className="w-4 h-4 text-primary" />
-            +91 7038523408
-          </div>
-        </div>
-      </div>
-
-      {/* Main nav */}
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <a href="#home" className="flex items-center">
+          <a 
+            href="#home" 
+            onClick={(e) => scrollToSection(e, "#home")}
+            className="flex items-center"
+          >
             <img src={sdmLogo} alt="SDM Technology" className="h-12 md:h-14" />
           </a>
 
@@ -50,14 +65,46 @@ const Header = () => {
               <a
                 key={link.name}
                 href={link.href}
+                onClick={(e) => scrollToSection(e, link.href)}
                 className="text-foreground/80 hover:text-primary font-medium transition-colors duration-300"
               >
                 {link.name}
               </a>
             ))}
-            <Button className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold px-6">
-              Get Started
-            </Button>
+            
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {user.email?.split("@")[0]}
+                </span>
+                <Button 
+                  variant="outline" 
+                  onClick={signOut}
+                  className="font-semibold"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate("/auth")}
+                  className="font-semibold"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+                <Button 
+                  onClick={handleGetStarted}
+                  className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold px-6"
+                >
+                  Get Started
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -83,15 +130,52 @@ const Header = () => {
                   <a
                     key={link.name}
                     href={link.href}
+                    onClick={(e) => scrollToSection(e, link.href)}
                     className="text-foreground/80 hover:text-primary font-medium transition-colors"
-                    onClick={() => setIsOpen(false)}
                   >
                     {link.name}
                   </a>
                 ))}
-                <Button className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold w-full">
-                  Get Started
-                </Button>
+                
+                {user ? (
+                  <>
+                    <span className="text-sm text-muted-foreground flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {user.email}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      onClick={signOut}
+                      className="font-semibold w-full"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        navigate("/auth");
+                        setIsOpen(false);
+                      }}
+                      className="font-semibold w-full"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        handleGetStarted();
+                        setIsOpen(false);
+                      }}
+                      className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold w-full"
+                    >
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           )}

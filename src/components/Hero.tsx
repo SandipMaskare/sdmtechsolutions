@@ -77,6 +77,15 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
+                onClick={() => {
+                  const element = document.querySelector("#contact");
+                  if (element) {
+                    const headerOffset = 80;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                  }
+                }}
                 className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold px-8 group"
               >
                 Get Started
@@ -85,6 +94,15 @@ const Hero = () => {
               <Button
                 size="lg"
                 variant="outline"
+                onClick={() => {
+                  const element = document.querySelector("#about");
+                  if (element) {
+                    const headerOffset = 80;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                  }
+                }}
                 className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10 font-semibold px-8"
               >
                 Learn More
