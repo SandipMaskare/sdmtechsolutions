@@ -1,35 +1,46 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Briefcase, MapPin, Clock, ArrowRight, Users, Rocket, Heart, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
-const jobOpenings = [
+interface Job {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  description: string | null;
+  requirements: string[] | null;
+}
+
+const fallbackJobs = [
   {
+    id: "1",
     title: "Full Stack Developer",
     type: "Full-time",
+    department: "Engineering",
     location: "Gondia, Maharashtra",
-    experience: "2-4 years",
     description: "Build scalable web applications using React, Node.js, and modern technologies.",
+    requirements: null,
   },
   {
+    id: "2",
     title: "Mobile App Developer",
     type: "Full-time",
+    department: "Engineering",
     location: "Remote / Hybrid",
-    experience: "1-3 years",
     description: "Develop cross-platform mobile applications using React Native or Flutter.",
+    requirements: null,
   },
   {
+    id: "3",
     title: "UI/UX Designer",
     type: "Full-time",
+    department: "Design",
     location: "Gondia, Maharashtra",
-    experience: "2-5 years",
     description: "Create stunning user interfaces and seamless user experiences for our clients.",
-  },
-  {
-    title: "Cloud Engineer",
-    type: "Full-time",
-    location: "Remote",
-    experience: "3-5 years",
-    description: "Design and maintain cloud infrastructure on AWS, Azure, or GCP.",
+    requirements: null,
   },
 ];
 
@@ -57,6 +68,26 @@ const benefits = [
 ];
 
 const Careers = () => {
+  const [jobs, setJobs] = useState<Job[]>(fallbackJobs);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    const { data, error } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      setJobs(data);
+    }
+    setLoading(false);
+  };
+
   return (
     <section id="careers" className="py-20 bg-muted">
       <div className="container mx-auto px-4">
@@ -123,51 +154,72 @@ const Careers = () => {
             Current <span className="text-primary">Openings</span>
           </h3>
           
-          <div className="space-y-4">
-            {jobOpenings.map((job, index) => (
-              <motion.div
-                key={job.title}
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-                className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300"
-              >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Briefcase className="w-5 h-5 text-primary" />
-                      <h4 className="text-lg font-semibold text-foreground font-display group-hover:text-primary transition-colors">
-                        {job.title}
-                      </h4>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : jobs.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              No open positions at the moment. Check back soon!
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {jobs.map((job, index) => (
+                <motion.div
+                  key={job.id}
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+                  className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Briefcase className="w-5 h-5 text-primary" />
+                        <h4 className="text-lg font-semibold text-foreground font-display group-hover:text-primary transition-colors">
+                          {job.title}
+                        </h4>
+                      </div>
+                      {job.description && (
+                        <p className="text-muted-foreground mb-3">{job.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          {job.location}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-primary" />
+                          {job.type}
+                        </span>
+                        <span className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs font-medium">
+                          {job.department}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-muted-foreground mb-3">{job.description}</p>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4 text-primary" />
-                        {job.location}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-4 h-4 text-primary" />
-                        {job.type}
-                      </span>
-                      <span className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs font-medium">
-                        {job.experience}
-                      </span>
-                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const element = document.querySelector("#contact");
+                        if (element) {
+                          const headerOffset = 80;
+                          const elementPosition = element.getBoundingClientRect().top;
+                          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                        }
+                      }}
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground group/btn shrink-0"
+                    >
+                      Apply Now
+                      <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground group/btn shrink-0"
-                  >
-                    Apply Now
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* CTA */}
@@ -185,7 +237,16 @@ const Careers = () => {
             We're always looking for talented individuals. Send us your resume and we'll keep you in mind for future opportunities.
           </p>
           <Button 
-            size="lg" 
+            size="lg"
+            onClick={() => {
+              const element = document.querySelector("#contact");
+              if (element) {
+                const headerOffset = 80;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+              }
+            }}
             className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold px-8 group"
           >
             Send Your Resume
