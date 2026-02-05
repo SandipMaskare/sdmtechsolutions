@@ -1,11 +1,20 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, ArrowUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
 const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const quickLinks = [
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
+    { name: "Careers", href: "/careers" },
+    { name: "Contact", href: "/contact" },
+  ];
 
   return (
     <footer className="bg-secondary py-16">
@@ -18,7 +27,9 @@ const Footer = () => {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <img src={sdmLogo} alt="SDM Technology" className="h-12 mb-4" />
+            <Link to="/">
+              <img src={sdmLogo} alt="SDM Technology" className="h-12 mb-4" />
+            </Link>
             <p className="text-secondary-foreground/70 text-sm leading-relaxed mb-4">
               Follow Your Passion. SDM Technology leads innovation in software
               development, delivering solutions that transform businesses.
@@ -36,14 +47,14 @@ const Footer = () => {
               Quick Links
             </h3>
             <ul className="space-y-3">
-              {["Home", "About", "Services", "Contact"].map((link) => (
-                <li key={link}>
-                  <a
-                    href={`#${link.toLowerCase()}`}
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
                     className="text-secondary-foreground/70 hover:text-primary transition-colors text-sm"
                   >
-                    {link}
-                  </a>
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -67,9 +78,12 @@ const Footer = () => {
                 "IT Consulting",
               ].map((service) => (
                 <li key={service}>
-                  <span className="text-secondary-foreground/70 text-sm">
+                  <Link
+                    to="/services"
+                    className="text-secondary-foreground/70 hover:text-primary transition-colors text-sm"
+                  >
                     {service}
-                  </span>
+                  </Link>
                 </li>
               ))}
             </ul>

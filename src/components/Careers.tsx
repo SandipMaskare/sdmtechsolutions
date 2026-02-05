@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Briefcase, MapPin, Clock, ArrowRight, Users, Rocket, Heart, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Job {
@@ -70,6 +71,7 @@ const benefits = [
 const Careers = () => {
   const [jobs, setJobs] = useState<Job[]>(fallbackJobs);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchJobs();
@@ -86,6 +88,10 @@ const Careers = () => {
       setJobs(data);
     }
     setLoading(false);
+  };
+
+  const handleApply = () => {
+    navigate("/contact");
   };
 
   return (
@@ -201,15 +207,7 @@ const Careers = () => {
                     </div>
                     <Button
                       variant="outline"
-                      onClick={() => {
-                        const element = document.querySelector("#contact");
-                        if (element) {
-                          const headerOffset = 80;
-                          const elementPosition = element.getBoundingClientRect().top;
-                          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                        }
-                      }}
+                      onClick={handleApply}
                       className="border-primary text-primary hover:bg-primary hover:text-primary-foreground group/btn shrink-0"
                     >
                       Apply Now
@@ -238,16 +236,8 @@ const Careers = () => {
           </p>
           <Button 
             size="lg"
-            onClick={() => {
-              const element = document.querySelector("#contact");
-              if (element) {
-                const headerOffset = 80;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-              }
-            }}
-            className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold px-8 group"
+            onClick={handleApply}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 group"
           >
             Send Your Resume
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

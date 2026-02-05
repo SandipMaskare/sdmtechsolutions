@@ -2,11 +2,13 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const words = ["Innovation", "Technology", "Excellence", "Solutions"];
 
 const Hero = () => {
   const [currentWord, setCurrentWord] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -77,16 +79,8 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                onClick={() => {
-                  const element = document.querySelector("#contact");
-                  if (element) {
-                    const headerOffset = 80;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                  }
-                }}
-                className="bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold px-8 group"
+                onClick={() => navigate("/contact")}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 group"
               >
                 Get Started
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -94,15 +88,7 @@ const Hero = () => {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => {
-                  const element = document.querySelector("#about");
-                  if (element) {
-                    const headerOffset = 80;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                  }
-                }}
+                onClick={() => navigate("/about")}
                 className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10 font-semibold px-8"
               >
                 Learn More

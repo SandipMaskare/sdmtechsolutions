@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Briefcase, MessageSquare, Settings, Users, Star, LogOut, Plus, Trash2, Edit, Eye, EyeOff, ChevronLeft } from "lucide-react";
+import { Briefcase, MessageSquare, Settings, Star, LogOut, ChevronLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import JobsManager from "@/components/admin/JobsManager";
 import ServicesManager from "@/components/admin/ServicesManager";
 import TestimonialsManager from "@/components/admin/TestimonialsManager";
 import ContactSubmissions from "@/components/admin/ContactSubmissions";
+import ContentManager from "@/components/admin/ContentManager";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
 const Admin = () => {
@@ -101,7 +102,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="jobs" className="flex items-center gap-2">
               <Briefcase className="w-4 h-4" />
               <span className="hidden sm:inline">Jobs</span>
@@ -118,6 +119,10 @@ const Admin = () => {
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Messages</span>
             </TabsTrigger>
+            <TabsTrigger value="content" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Content</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs">
@@ -131,6 +136,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="messages">
             <ContactSubmissions />
+          </TabsContent>
+          <TabsContent value="content">
+            <ContentManager />
           </TabsContent>
         </Tabs>
       </main>
