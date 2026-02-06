@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, User, Shield } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, Shield, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
 const navLinks = [
@@ -16,9 +17,25 @@ const navLinks = [
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          setUserRole(data?.role || null);
+        });
+    } else {
+      setUserRole(null);
+    }
+  }, [user]);
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
@@ -55,6 +72,17 @@ const Header = () => {
                   <User className="w-4 h-4" />
                   {user.email?.split("@")[0]}
                 </span>
+                {userRole && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => navigate("/crm/dashboard")}
+                    className="font-semibold"
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    CRM
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -132,6 +160,19 @@ const Header = () => {
                       <User className="w-4 h-4" />
                       {user.email}
                     </span>
+                    {userRole && (
+                      <Button 
+                        variant="default" 
+                        onClick={() => {
+                          navigate("/crm/dashboard");
+                          setIsOpen(false);
+                        }}
+                        className="font-semibold w-full"
+                      >
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        CRM Dashboard
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       onClick={() => {
