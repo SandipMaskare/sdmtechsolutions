@@ -13,6 +13,17 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
+// CRM Pages
+import CRMDashboard from "./pages/crm/CRMDashboard";
+import EmployeesPage from "./pages/crm/EmployeesPage";
+import TasksPage from "./pages/crm/TasksPage";
+import SubmissionsPage from "./pages/crm/SubmissionsPage";
+import AnalyticsPage from "./pages/crm/AnalyticsPage";
+import SettingsPage from "./pages/crm/SettingsPage";
+import MyTasksPage from "./pages/crm/MyTasksPage";
+import MySubmissionsPage from "./pages/crm/MySubmissionsPage";
+import PerformancePage from "./pages/crm/PerformancePage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -30,6 +41,18 @@ const App = () => (
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
+            
+            {/* CRM Routes */}
+            <Route path="/crm/dashboard" element={<CRMDashboard />} />
+            <Route path="/crm/employees" element={<EmployeesPage />} />
+            <Route path="/crm/tasks" element={<TasksPage />} />
+            <Route path="/crm/submissions" element={<SubmissionsPage />} />
+            <Route path="/crm/analytics" element={<AnalyticsPage />} />
+            <Route path="/crm/settings" element={<SettingsPage />} />
+            <Route path="/crm/my-tasks" element={<MyTasksPage />} />
+            <Route path="/crm/my-submissions" element={<MySubmissionsPage />} />
+            <Route path="/crm/performance" element={<PerformancePage />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
