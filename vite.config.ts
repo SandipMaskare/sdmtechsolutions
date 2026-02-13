@@ -18,10 +18,14 @@ function generateTags(text: string): string[] {
   return uniqueWords.slice(0, 5);
 }
 
-// Example usage (will print during build)
-console.log('Example tags:', generateTags('Welcome to SDM Tech Solution! Build your own tagger.'));
+// Export an async config — safest way for Vercel builds
+export default defineConfig(async () => {
+  // Example usage inside function
+  const exampleTags = generateTags('Welcome to SDM Tech Solution! Build your own tagger.');
+  console.log('Example tags (build-time):', exampleTags);
 
-export default defineConfig({
-  plugins: [react()],
-  // You can add other Vite options here if needed
+  return {
+    plugins: [react()],
+    // add other Vite options here
+  };
 });
