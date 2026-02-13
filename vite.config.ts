@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    build:dev: "vite build --mode development"
+
   ].filter(Boolean),
   resolve: {
     alias: {
