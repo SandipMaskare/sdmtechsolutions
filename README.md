@@ -1,6 +1,6 @@
 # SDM Tech Solution
 
-Official website of SDM Tech Solution.
+Official website of SDM Technology
 
 Built with:
 - Vite
