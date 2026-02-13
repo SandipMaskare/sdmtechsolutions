@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, Play, Send } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, Play, Send, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,8 @@ const MyTasksPage = () => {
     external_link: "",
     comments: "",
   });
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -95,14 +97,42 @@ const MyTasksPage = () => {
   };
 
   const handleSubmitWork = async () => {
-    if (!selectedTask) return;
+    if (!selectedTask || !user) return;
+    setUploading(true);
+
+    let fileUrl: string | null = null;
+
+    // Upload file if selected
+    if (uploadFile) {
+      const fileExt = uploadFile.name.split(".").pop();
+      const filePath = `${user.id}/${selectedTask.id}/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("task-submissions")
+        .upload(filePath, uploadFile);
+
+      if (uploadError) {
+        toast({
+          title: "Error",
+          description: "Failed to upload file: " + uploadError.message,
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("task-submissions")
+        .getPublicUrl(filePath);
+      fileUrl = urlData.publicUrl;
+    }
 
     // Create submission
     const { error: subError } = await supabase.from("task_submissions").insert({
       task_id: selectedTask.id,
-      submitted_by: user?.id,
+      submitted_by: user.id,
       external_link: submitData.external_link || null,
       comments: submitData.comments || null,
+      file_url: fileUrl,
       review_status: "pending",
     });
 
@@ -112,6 +142,7 @@ const MyTasksPage = () => {
         description: "Failed to submit work",
         variant: "destructive",
       });
+      setUploading(false);
       return;
     }
 
@@ -129,6 +160,8 @@ const MyTasksPage = () => {
     setIsSubmitDialogOpen(false);
     setSelectedTask(null);
     setSubmitData({ external_link: "", comments: "" });
+    setUploadFile(null);
+    setUploading(false);
     fetchTasks();
   };
 
@@ -318,6 +351,20 @@ const MyTasksPage = () => {
                 </div>
               )}
               <div className="space-y-2">
+                <Label>Upload File (Optional)</Label>
+                <Input
+                  type="file"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  className="cursor-pointer"
+                />
+                {uploadFile && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Upload className="h-3 w-3" />
+                    {uploadFile.name}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
                 <Label>External Link (Optional)</Label>
                 <Input
                   value={submitData.external_link}
@@ -338,9 +385,9 @@ const MyTasksPage = () => {
                   rows={3}
                 />
               </div>
-              <Button onClick={handleSubmitWork} className="w-full">
+              <Button onClick={handleSubmitWork} className="w-full" disabled={uploading}>
                 <Send className="h-4 w-4 mr-2" />
-                Submit Work
+                {uploading ? "Uploading..." : "Submit Work"}
               </Button>
             </div>
           </DialogContent>
