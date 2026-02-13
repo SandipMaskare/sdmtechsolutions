@@ -9,9 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
     "build:dev": "vite build --mode development"
-
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
