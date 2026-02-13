@@ -1,19 +1,22 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
-import path from 'path';
 
-// Import your custom tagger (use .js extension for ESM)
-import { generateTags } from './src/utils/myTagger.ts';
+// Custom tagger code directly inside vite.config.ts
+function generateTags(text: string): string[] {
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, '')
+    .split(' ')
+    .filter(Boolean);
 
+  const uniqueWords = Array.from(new Set(words));
 
-// Example usage during build (optional)
-console.log('Example tags:', generateTags('Welcome to SDM Tech Solution! Custom build tags'));
+  return uniqueWords.slice(0, 5);
+}
+
+// Example usage
+console.log('Example tags:', generateTags('Welcome to SDM Tech Solution!'));
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'), // optional shortcut for imports
-    },
-  },
 });
