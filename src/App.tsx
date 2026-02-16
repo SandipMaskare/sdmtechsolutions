@@ -19,6 +19,7 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 
 // CRM Pages
 const CRMDashboard = lazy(() => import("./pages/crm/CRMDashboard"));
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/profile" element={<ProfilePage />} />
 
               {/* CRM Routes */}
               <Route path="/crm/dashboard" element={<CRMDashboard />} />

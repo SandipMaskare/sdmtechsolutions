@@ -4,6 +4,8 @@ import { Briefcase, MapPin, Clock, ArrowRight, Users, Rocket, Heart, GraduationC
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import JobApplicationDialog from "@/components/JobApplicationDialog";
 
 interface Job {
   id: string;
@@ -71,6 +73,8 @@ const benefits = [
 const Careers = () => {
   const [jobs, setJobs] = useState<Job[]>(fallbackJobs);
   const [loading, setLoading] = useState(true);
+  const [applyJob, setApplyJob] = useState<Job | null>(null);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -90,8 +94,12 @@ const Careers = () => {
     setLoading(false);
   };
 
-  const handleApply = () => {
-    navigate("/contact");
+  const handleApply = (job: Job) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setApplyJob(job);
   };
 
   return (
@@ -207,7 +215,7 @@ const Careers = () => {
                     </div>
                     <Button
                       variant="outline"
-                      onClick={handleApply}
+                      onClick={() => handleApply(job)}
                       className="border-primary text-primary hover:bg-primary hover:text-primary-foreground group/btn shrink-0"
                     >
                       Apply Now
@@ -236,7 +244,7 @@ const Careers = () => {
           </p>
           <Button 
             size="lg"
-            onClick={handleApply}
+            onClick={() => navigate("/contact")}
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 group"
           >
             Send Your Resume
@@ -244,6 +252,15 @@ const Careers = () => {
           </Button>
         </motion.div>
       </div>
+
+      {applyJob && (
+        <JobApplicationDialog
+          open={!!applyJob}
+          onOpenChange={(open) => !open && setApplyJob(null)}
+          jobId={applyJob.id}
+          jobTitle={applyJob.title}
+        />
+      )}
     </section>
   );
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Briefcase, MessageSquare, Settings, Star, LogOut, ChevronLeft, FileText } from "lucide-react";
+import { Briefcase, MessageSquare, Settings, Star, LogOut, ChevronLeft, FileText, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import ServicesManager from "@/components/admin/ServicesManager";
 import TestimonialsManager from "@/components/admin/TestimonialsManager";
 import ContactSubmissions from "@/components/admin/ContactSubmissions";
 import ContentManager from "@/components/admin/ContentManager";
+import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
 const Admin = () => {
@@ -102,10 +103,14 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="jobs" className="flex items-center gap-2">
               <Briefcase className="w-4 h-4" />
               <span className="hidden sm:inline">Jobs</span>
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              <span className="hidden sm:inline">Applications</span>
             </TabsTrigger>
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -127,6 +132,9 @@ const Admin = () => {
 
           <TabsContent value="jobs">
             <JobsManager />
+          </TabsContent>
+          <TabsContent value="applications">
+            <ApplicationsManager />
           </TabsContent>
           <TabsContent value="services">
             <ServicesManager />
