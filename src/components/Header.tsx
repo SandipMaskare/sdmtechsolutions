@@ -1,11 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, User, Shield, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, Shield, LayoutDashboard, MoreVertical, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 import sdmLogo from "@/assets/sdm-logo.jpg";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -17,30 +24,46 @@ const navLinks = [
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const { user, signOut } = useAuth();
+  const { role } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    if (user) {
-      supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          setUserRole(data?.role || null);
-        });
-    } else {
-      setUserRole(null);
-    }
-  }, [user]);
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
     return location.pathname.startsWith(href);
   };
+
+  const UserMenu = ({ mobile = false }: { mobile?: boolean }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size={mobile ? "default" : "icon"} className={mobile ? "w-full justify-start font-semibold" : ""}>
+          <MoreVertical className="w-5 h-5" />
+          {mobile && <span className="ml-2">Menu</span>}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={() => { navigate("/profile"); setIsOpen(false); }}>
+          <UserCircle className="w-4 h-4 mr-2" /> Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => { navigate("/crm/dashboard"); setIsOpen(false); }}>
+          <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+        </DropdownMenuItem>
+        {role === "admin" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { navigate("/admin"); setIsOpen(false); }}>
+              <Shield className="w-4 h-4 mr-2" /> Admin Panel
+            </DropdownMenuItem>
+          </>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={signOut} className="text-destructive">
+          <LogOut className="w-4 h-4 mr-2" /> Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -57,9 +80,7 @@ const Header = () => {
                 key={link.name}
                 to={link.href}
                 className={`font-medium transition-colors duration-300 ${
-                  isActive(link.href)
-                    ? "text-primary"
-                    : "text-foreground/80 hover:text-primary"
+                  isActive(link.href) ? "text-primary" : "text-foreground/80 hover:text-primary"
                 }`}
               >
                 {link.name}
@@ -72,48 +93,14 @@ const Header = () => {
                   <User className="w-4 h-4" />
                   {user.email?.split("@")[0]}
                 </span>
-                {userRole && (
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={() => navigate("/crm/dashboard")}
-                    className="font-semibold"
-                  >
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
-                    CRM
-                  </Button>
-                )}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="font-semibold"
-                >
-                  <Shield className="w-4 h-4 mr-2" />
-                  Admin
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={signOut}
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
+                <UserMenu />
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate("/auth")}
-                  className="font-semibold"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
+                <Button variant="outline" onClick={() => navigate("/auth")} className="font-semibold">
+                  <LogIn className="w-4 h-4 mr-2" /> Sign In
                 </Button>
-                <Button 
-                  onClick={() => navigate("/contact")}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
-                >
+                <Button onClick={() => navigate("/contact")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6">
                   Get Started
                 </Button>
               </div>
@@ -121,10 +108,7 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setIsOpen(!isOpen)}
-          >
+          <button className="md:hidden p-2 text-foreground" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -145,9 +129,7 @@ const Header = () => {
                     to={link.href}
                     onClick={() => setIsOpen(false)}
                     className={`font-medium transition-colors ${
-                      isActive(link.href)
-                        ? "text-primary"
-                        : "text-foreground/80 hover:text-primary"
+                      isActive(link.href) ? "text-primary" : "text-foreground/80 hover:text-primary"
                     }`}
                   >
                     {link.name}
@@ -157,62 +139,16 @@ const Header = () => {
                 {user ? (
                   <>
                     <span className="text-sm text-muted-foreground flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      {user.email}
+                      <User className="w-4 h-4" /> {user.email}
                     </span>
-                    {userRole && (
-                      <Button 
-                        variant="default" 
-                        onClick={() => {
-                          navigate("/crm/dashboard");
-                          setIsOpen(false);
-                        }}
-                        className="font-semibold w-full"
-                      >
-                        <LayoutDashboard className="w-4 h-4 mr-2" />
-                        CRM Dashboard
-                      </Button>
-                    )}
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        navigate("/admin");
-                        setIsOpen(false);
-                      }}
-                      className="font-semibold w-full"
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Admin Panel
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      onClick={signOut}
-                      className="font-semibold w-full"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
+                    <UserMenu mobile />
                   </>
                 ) : (
                   <>
-                    <Button 
-                      variant="outline"
-                      onClick={() => {
-                        navigate("/auth");
-                        setIsOpen(false);
-                      }}
-                      className="font-semibold w-full"
-                    >
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In
+                    <Button variant="outline" onClick={() => { navigate("/auth"); setIsOpen(false); }} className="font-semibold w-full">
+                      <LogIn className="w-4 h-4 mr-2" /> Sign In
                     </Button>
-                    <Button 
-                      onClick={() => {
-                        navigate("/contact");
-                        setIsOpen(false);
-                      }}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full"
-                    >
+                    <Button onClick={() => { navigate("/contact"); setIsOpen(false); }} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full">
                       Get Started
                     </Button>
                   </>
