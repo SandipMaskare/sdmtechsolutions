@@ -4,6 +4,16 @@ import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const viewResume = async (fileName: string) => {
+  const { data, error } = await supabase.storage
+    .from("resumes")
+    .createSignedUrl(fileName, 60);
+
+  if (data?.signedUrl) {
+    window.open(data.signedUrl, "_blank");
+  }
+};
+
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
