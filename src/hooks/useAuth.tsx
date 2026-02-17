@@ -11,7 +11,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+const [role, setRole] = useState<string | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -33,36 +33,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
 
-        if (currentUser) {
-          await fetchRole(currentUser.id);
-        } else {
-          setRole(null);
-        }
+    setRole(data?.role ?? null);
+  };
 
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
       setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
+      setUser(session?.user ?? null);
 
-      if (currentUser) {
-        await fetchRole(currentUser.id);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      } else {
+        setRole(null);
       }
 
       setLoading(false);
-    });
+    }
+  );
 
-    return () => subscription.unsubscribe();
-  }, []);
+  supabase.auth.getSession().then(async ({ data: { session } }) => {
+    setSession(session);
+    setUser(session?.user ?? null);
+
+    if (session?.user) {
+      await fetchProfile(session.user.id);
+    }
+
+    setLoading(false);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
   const signOut = async () => {
     await supabase.auth.signOut();
