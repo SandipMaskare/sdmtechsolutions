@@ -15,37 +15,19 @@ import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
-const Admin = () => {
-  const { user, signOut, loading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+const { user, role, signOut, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-      return;
-    }
+useEffect(() => {
+  if (!loading && !user) {
+    navigate("/auth");
+    return;
+  }
 
-    if (user) {
-      checkAdminStatus();
-    }
-  }, [user, loading, navigate]);
+  if (!loading && role !== "admin") {
+    navigate("/");
+  }
+}, [user, role, loading, navigate]);
 
-  const checkAdminStatus = async () => {
-    const { data, error } = await supabase
-      .from("admin_users")
-      .select("id")
-      .eq("user_id", user?.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error checking admin status:", error);
-      setIsAdmin(false);
-      return;
-    }
-
-    setIsAdmin(!!data);
   };
 
   if (loading || isAdmin === null) {
