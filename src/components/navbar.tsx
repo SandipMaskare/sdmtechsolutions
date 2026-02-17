@@ -1,6 +1,4 @@
 const { user, role } = useAuth();
-{role === "admin" && (
-  <DropdownItem onClick={() => navigate("/admin")}>
-    Admin Dashboard
-  </DropdownItem>
-)}
+
+console.log("USER:", user?.email);
+console.log("ROLE:", role);
