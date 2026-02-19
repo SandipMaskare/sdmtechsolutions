@@ -30,3 +30,34 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }))
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 8080,
+  },
+
+  plugins: [react()],
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+    dedupe: ['react', 'react-dom'],
+  },
+
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+  },
+
+  build: {
+    rollupOptions: {
+      external: [],   // 🔥 force React NOT to be external
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
+}))
