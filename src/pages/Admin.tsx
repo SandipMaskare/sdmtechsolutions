@@ -1,11 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Briefcase, MessageSquare, Settings, Star, LogOut, ChevronLeft, FileText, ClipboardList } from "lucide-react";
+import {
+  Briefcase,
+  MessageSquare,
+  Settings,
+  Star,
+  LogOut,
+  ChevronLeft,
+  FileText,
+  ClipboardList,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import JobsManager from "@/components/admin/JobsManager";
 import ServicesManager from "@/components/admin/ServicesManager";
@@ -15,29 +22,30 @@ import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import sdmLogo from "@/assets/sdm-logo.jpg";
 
-const { user, role, signOut, loading } = useAuth();
+const Admin = () => {
+  const navigate = useNavigate();
+  const { user, role, signOut, loading } = useAuth();
 
-useEffect(() => {
-  if (!loading && !user) {
-    navigate("/auth");
-    return;
-  }
+  const isAdmin = role === "admin";
 
-  if (!loading && role !== "admin") {
-    navigate("/");
-  }
-}, [user, role, loading, navigate]);
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+      return;
+    }
 
-  };
+    if (!loading && role !== "admin") {
+      navigate("/");
+    }
+  }, [user, role, loading, navigate]);
 
   if (loading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-)
-}
-
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
@@ -47,8 +55,12 @@ useEffect(() => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <h1 className="text-2xl font-bold text-foreground mb-4">Access Denied</h1>
-          <p className="text-muted-foreground mb-6">You don't have admin privileges.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Access Denied
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            You don't have admin privileges.
+          </p>
           <Button onClick={() => navigate("/")} variant="outline">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Home
@@ -60,7 +72,6 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -68,10 +79,14 @@ useEffect(() => {
               <img src={sdmLogo} alt="SDM Technology" className="h-10" />
             </a>
             <span className="text-muted-foreground">|</span>
-            <h1 className="text-lg font-semibold text-foreground">Admin Dashboard</h1>
+            <h1 className="text-lg font-semibold text-foreground">
+              Admin Dashboard
+            </h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden sm:block">{user?.email}</span>
+            <span className="text-sm text-muted-foreground hidden sm:block">
+              {user?.email}
+            </span>
             <Button variant="outline" size="sm" onClick={() => navigate("/")}>
               <ChevronLeft className="w-4 h-4 mr-2" />
               Site
@@ -83,33 +98,26 @@ useEffect(() => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="jobs" className="space-y-6">
           <TabsList className="grid w-full max-w-4xl grid-cols-6">
-            <TabsTrigger value="jobs" className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4" />
-              <span className="hidden sm:inline">Jobs</span>
+            <TabsTrigger value="jobs">
+              <Briefcase className="w-4 h-4" /> Jobs
             </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center gap-2">
-              <ClipboardList className="w-4 h-4" />
-              <span className="hidden sm:inline">Applications</span>
+            <TabsTrigger value="applications">
+              <ClipboardList className="w-4 h-4" /> Applications
             </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Services</span>
+            <TabsTrigger value="services">
+              <Settings className="w-4 h-4" /> Services
             </TabsTrigger>
-            <TabsTrigger value="testimonials" className="flex items-center gap-2">
-              <Star className="w-4 h-4" />
-              <span className="hidden sm:inline">Testimonials</span>
+            <TabsTrigger value="testimonials">
+              <Star className="w-4 h-4" /> Testimonials
             </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">Messages</span>
+            <TabsTrigger value="messages">
+              <MessageSquare className="w-4 h-4" /> Messages
             </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Content</span>
+            <TabsTrigger value="content">
+              <FileText className="w-4 h-4" /> Content
             </TabsTrigger>
           </TabsList>
 
