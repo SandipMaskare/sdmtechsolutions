@@ -32,6 +32,7 @@ const Admin = () => {
     if (!loading && !user) {
       navigate("/auth");
       return;
+    }
 
     if (!loading && role !== "admin") {
       navigate("/");
