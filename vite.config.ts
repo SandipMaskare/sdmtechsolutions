@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { componentTagger } from "lovable-tagger";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import { componentTagger } from "lovable-tagger"
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -12,9 +12,21 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],   // 🔥 IMPORTANT
   },
-}));
+
+  optimizeDeps: {
+    include: ['react', 'react-dom'],  // 🔥 IMPORTANT
+  },
+
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
+}))
