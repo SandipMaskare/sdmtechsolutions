@@ -29,8 +29,7 @@ const Admin = () => {
   const isAdmin = role === "admin";
 
   useEffect(() => {
-    if (!loading && !user) 
-    {
+    if (!loading && !user) {
       navigate("/auth");
       return;
     }
@@ -47,6 +46,7 @@ const Admin = () => {
       </div>
     );
   }
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
