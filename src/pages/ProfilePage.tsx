@@ -79,7 +79,7 @@ const ProfilePage = () => {
     const { data: urlData } = supabase.storage.from("companydata").getPublicUrl(filePath);
     const url = urlData.publicUrl;
 
-    await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+    await supabase.from("profiles").update({ avatar_url: url })..eq("id", user.id);
     setAvatarUrl(url);
     setUploading(false);
     toast({ title: "Avatar updated!" });
@@ -92,7 +92,7 @@ const ProfilePage = () => {
     const { error } = await supabase
       .from("profiles")
       .update({ full_name: fullName, phone, department, position })
-      .eq("user_id", user.id);
+      .eq("id", user.id)
 
     setSaving(false);
     if (error) {
