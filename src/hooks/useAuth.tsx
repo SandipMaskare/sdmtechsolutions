@@ -19,59 +19,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async (userId: string) => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", userId)
-        .single();
+  let isMounted = true;
 
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (!isMounted) return;
+
+    if (error) {
+      console.error("Error fetching profile:", error);
+      setRole(null);
+    } else {
       setRole(data?.role ?? null);
-    };
+    }
+  };
 
-    const { data: { subscription } } =
-      supabase.auth.onAuthStateChange(async (_, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+  const initialize = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
 
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setRole(null);
-        }
+    if (!isMounted) return;
 
-        setLoading(false);
-      });
+    setSession(session);
+    setUser(session?.user ?? null);
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    if (session?.user) {
+      await fetchProfile(session.user.id);
+    }
+
+    setLoading(false);
+  };
+
+  initialize();
+
+  const { data: { subscription } } =
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted) return;
+
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
         await fetchProfile(session.user.id);
+      } else {
+        setRole(null);
       }
 
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  return () => {
+    isMounted = false;
+    subscription.unsubscribe();
   };
-
-  return (
-    <AuthContext.Provider value={{ user, session, role, loading, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+}, []);
