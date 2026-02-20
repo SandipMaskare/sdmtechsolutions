@@ -12,39 +12,27 @@ export const useUserRole = () => {
 
   useEffect(() => {
     if (authLoading) return;
-    
+
     if (!user) {
       setRole(null);
       setLoading(false);
       return;
     }
 
-    const fetchRole = async () => {
+    const fetchProfile = async () => {
       try {
-        // Fetch user role
-        const { data: roleData, error: roleError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("id", user.id);
-          .maybeSingle();
-
-        if (roleError) {
-          console.error("Error fetching role:", roleError);
-        }
-
-        // Fetch profile
-        const { data: profileData, error: profileError } = await supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("id", user.id)
           .maybeSingle();
 
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
+        if (error) {
+          console.error("Error fetching profile:", error);
         }
 
-        setRole(roleData?.role as UserRole || null);
-        setProfile(profileData);
+        setProfile(data);
+        setRole(data?.role || null);
       } catch (error) {
         console.error("Error in useUserRole:", error);
       } finally {
@@ -52,7 +40,7 @@ export const useUserRole = () => {
       }
     };
 
-    fetchRole();
+    fetchProfile();
   }, [user, authLoading]);
 
   return { role, loading: authLoading || loading, profile, user };
