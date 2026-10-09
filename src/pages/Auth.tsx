@@ -5,7 +5,6 @@ import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import sdmLogo from "@/assets/sdm-logo.jpg";
@@ -287,8 +286,9 @@ const Auth = () => {
               className="w-full"
               onClick={async () => {
                 setLoading(true);
-                const { error } = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: { redirectTo: window.location.origin },
                 });
                 if (error) {
                   toast({

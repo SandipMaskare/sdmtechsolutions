@@ -120,10 +120,8 @@ const MyTasksPage = () => {
         return;
       }
 
-      const { data: urlData } = supabase.storage
-        .from("task-submissions")
-        .getPublicUrl(filePath);
-      fileUrl = urlData.publicUrl;
+      // bucket is private: store the path; admins open it via a signed URL
+      fileUrl = filePath;
     }
 
     // Create submission

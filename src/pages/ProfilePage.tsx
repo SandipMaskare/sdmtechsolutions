@@ -11,9 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -67,7 +64,7 @@ const ProfilePage = () => {
     const filePath = `${user.id}/avatar.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("companydata")
+      .from("avatars")
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
@@ -76,10 +73,10 @@ const ProfilePage = () => {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("companydata").getPublicUrl(filePath);
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
     const url = urlData.publicUrl;
 
-    await supabase.from("profiles").update({ avatar_url: url })..eq("id", user.id);
+    await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
     setAvatarUrl(url);
     setUploading(false);
     toast({ title: "Avatar updated!" });
@@ -92,7 +89,7 @@ const ProfilePage = () => {
     const { error } = await supabase
       .from("profiles")
       .update({ full_name: fullName, phone, department, position })
-      .eq("id", user.id)
+      .eq("user_id", user.id);
 
     setSaving(false);
     if (error) {

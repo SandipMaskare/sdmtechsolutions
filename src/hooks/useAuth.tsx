@@ -18,61 +18,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-  let isMounted = true;
-
-  const fetchProfile = async (userId: string) => {
+  // Roles live in the user_roles table (not on profiles)
+  const fetchRole = async (userId: string) => {
     const { data, error } = await supabase
-      .from("profiles")
+      .from("user_roles")
       .select("role")
-      .eq("id", userId)
-      .single();
+      .eq("user_id", userId);
 
-    if (!isMounted) return;
-
-    if (error) {
-      console.error("Error fetching profile:", error);
+    if (error || !data?.length) {
+      if (error) console.error("Error fetching role:", error);
       setRole(null);
-    } else {
-      setRole(data?.role ?? null);
+      return;
     }
+    setRole(data.some((r) => r.role === "admin") ? "admin" : "employee");
   };
 
-  const initialize = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+  useEffect(() => {
+    let mounted = true;
 
-    if (!isMounted) return;
-
-    setSession(session);
-    setUser(session?.user ?? null);
-
-    if (session?.user) {
-      await fetchProfile(session.user.id);
-    }
-
-    setLoading(false);
-  };
-
-  initialize();
-
-  const { data: { subscription } } =
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!isMounted) return;
-
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setRole(null);
-      }
-
-      setLoading(false);
+      if (session?.user) await fetchRole(session.user.id);
+      if (mounted) setLoading(false);
     });
 
-  return () => {
-    isMounted = false;
-    subscription.unsubscribe();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      // Defer: never call supabase inside this callback directly
+      setTimeout(() => {
+        if (!mounted) return;
+        if (session?.user) fetchRole(session.user.id);
+        else setRole(null);
+      }, 0);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
   };
-}, []);
+
+  return (
+    <AuthContext.Provider value={{ user, session, role, loading, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+};
