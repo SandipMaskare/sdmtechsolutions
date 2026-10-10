@@ -8,4 +8,4 @@ Built with:
 - TypeScript
 - Tailwind CSS
 
-Developed and maintained by Sandip Maskare.
+Developed and maintained by Sandip Maskare. 
