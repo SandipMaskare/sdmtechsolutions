@@ -5,7 +5,8 @@ import { Menu, X, LogIn, LogOut, User, Shield, LayoutDashboard, MoreVertical, Us
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import sdmLogo from "@/assets/sdm-logo.jpg";
+import { homePath } from "@/lib/roles";
+import sdmLogo from "@/assets/sdm-logo.webp";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Services", href: "/services" },
+  { name: "Internships", href: "/internships" },
   { name: "Careers", href: "/careers" },
   { name: "Contact", href: "/contact" },
 ];
@@ -46,7 +48,7 @@ const Header = () => {
         <DropdownMenuItem onClick={() => { navigate("/profile"); setIsOpen(false); }}>
           <UserCircle className="w-4 h-4 mr-2" /> Profile
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { navigate("/crm/dashboard"); setIsOpen(false); }}>
+        <DropdownMenuItem onClick={() => { navigate(role ? homePath(role) : "/profile"); setIsOpen(false); }}>
           <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
         </DropdownMenuItem>
         {role === "admin" && (

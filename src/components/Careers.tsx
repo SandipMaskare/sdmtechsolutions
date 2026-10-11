@@ -4,9 +4,12 @@ import { Briefcase, MapPin, Clock, ArrowRight, Users, Rocket, Heart, GraduationC
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { openApply } from "@/lib/apply";
 
 interface Job {
   id: string;
+  kind?: string | null;
+  apply_url?: string | null;
   title: string;
   department: string;
   location: string;
@@ -52,9 +55,10 @@ const Careers = () => {
       .from("jobs")
       .select("*")
       .eq("is_active", true)
+      .eq("kind", "job")
       .order("created_at", { ascending: false });
 
-    if (!error && data && data.length > 0) {
+    if (!error && data) {
       setJobs(data);
     }
     setLoading(false);
@@ -151,7 +155,9 @@ const Careers = () => {
                       <div className="flex items-center gap-3 mb-2">
                         <Briefcase className="w-5 h-5 text-primary" />
                         <h4 className="text-lg font-semibold text-foreground font-display group-hover:text-primary transition-colors">
-                          {job.title}
+                          <a href={`/careers/${job.id}`} onClick={(e) => { e.preventDefault(); navigate(`/careers/${job.id}`); }}>
+                            {job.title}
+                          </a>
                         </h4>
                       </div>
                       {job.description && (
@@ -173,10 +179,10 @@ const Careers = () => {
                     </div>
                     <Button
                       variant="outline"
-                      onClick={() => navigate(`/careers/${job.id}`)}
+                      onClick={async () => { if (!(await openApply(job))) navigate(`/careers/${job.id}`); }}
                       className="border-primary text-primary hover:bg-primary hover:text-primary-foreground group/btn shrink-0"
                     >
-                      View & Apply
+                      Apply Now
                       <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Button>
                   </div>

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, ArrowUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import sdmLogo from "@/assets/sdm-logo.jpg";
+import sdmLogo from "@/assets/sdm-logo.webp";
 
 const Footer = () => {
   const scrollToTop = () => {
