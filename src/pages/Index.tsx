@@ -6,7 +6,7 @@ import Services from "@/components/Services";
 import TechStack from "@/components/TechStack";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import Testimonials from "@/components/Testimonials";
-import Careers from "@/components/Careers";
+import CareersTeaser from "@/components/CareersTeaser";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
@@ -21,7 +21,7 @@ const Index = () => {
       <TechStack />
       <WhyChooseUs />
       <Testimonials />
-      <Careers />
+      <CareersTeaser />
       <Contact />
       <Footer />
     </div>
