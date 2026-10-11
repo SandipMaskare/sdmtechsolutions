@@ -4,8 +4,6 @@ import { Briefcase, MapPin, Clock, ArrowRight, Users, Rocket, Heart, GraduationC
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import JobApplicationDialog from "@/components/JobApplicationDialog";
 
 interface Job {
   id: string;
@@ -16,36 +14,6 @@ interface Job {
   description: string | null;
   requirements: string[] | null;
 }
-
-const fallbackJobs = [
-  {
-    id: "1",
-    title: "Full Stack Developer",
-    type: "Full-time",
-    department: "Engineering",
-    location: "Gondia, Maharashtra",
-    description: "Build scalable web applications using React, Node.js, and modern technologies.",
-    requirements: null,
-  },
-  {
-    id: "2",
-    title: "Mobile App Developer",
-    type: "Full-time",
-    department: "Engineering",
-    location: "Remote / Hybrid",
-    description: "Develop cross-platform mobile applications using React Native or Flutter.",
-    requirements: null,
-  },
-  {
-    id: "3",
-    title: "UI/UX Designer",
-    type: "Full-time",
-    department: "Design",
-    location: "Gondia, Maharashtra",
-    description: "Create stunning user interfaces and seamless user experiences for our clients.",
-    requirements: null,
-  },
-];
 
 const benefits = [
   {
@@ -71,10 +39,8 @@ const benefits = [
 ];
 
 const Careers = () => {
-  const [jobs, setJobs] = useState<Job[]>(fallbackJobs);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [applyJob, setApplyJob] = useState<Job | null>(null);
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,14 +58,6 @@ const Careers = () => {
       setJobs(data);
     }
     setLoading(false);
-  };
-
-  const handleApply = (job: Job) => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    setApplyJob(job);
   };
 
   return (
@@ -174,7 +132,7 @@ const Careers = () => {
             </div>
           ) : jobs.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No open positions at the moment. Check back soon!
+              No open positions right now. Send us your resume and we will contact you when a role opens.
             </p>
           ) : (
             <div className="space-y-4">
@@ -215,10 +173,10 @@ const Careers = () => {
                     </div>
                     <Button
                       variant="outline"
-                      onClick={() => handleApply(job)}
+                      onClick={() => navigate(`/careers/${job.id}`)}
                       className="border-primary text-primary hover:bg-primary hover:text-primary-foreground group/btn shrink-0"
                     >
-                      Apply Now
+                      View & Apply
                       <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Button>
                   </div>
@@ -253,14 +211,6 @@ const Careers = () => {
         </motion.div>
       </div>
 
-      {applyJob && (
-        <JobApplicationDialog
-          open={!!applyJob}
-          onOpenChange={(open) => !open && setApplyJob(null)}
-          jobId={applyJob.id}
-          jobTitle={applyJob.title}
-        />
-      )}
     </section>
   );
 };

@@ -1,51 +1,7 @@
 import { motion } from "framer-motion";
-import {
-  Code,
-  Smartphone,
-  Globe,
-  Database,
-  Cloud,
-  Shield,
-} from "lucide-react";
-
-const services = [
-  {
-    icon: Code,
-    title: "Software Development",
-    description:
-      "Custom software solutions tailored to your business needs with modern technologies and best practices.",
-  },
-  {
-    icon: Globe,
-    title: "Web Development",
-    description:
-      "Responsive, fast, and SEO-optimized websites that deliver exceptional user experiences.",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile App Development",
-    description:
-      "Native and cross-platform mobile applications for iOS and Android platforms.",
-  },
-  {
-    icon: Database,
-    title: "Data & Analytics",
-    description:
-      "Transform raw data into actionable insights with our analytics solutions.",
-  },
-  {
-    icon: Cloud,
-    title: "Cloud Solutions",
-    description:
-      "Scalable cloud infrastructure and migration services for modern businesses.",
-  },
-  {
-    icon: Shield,
-    title: "IT Consulting",
-    description:
-      "Strategic technology consulting to help you make informed decisions.",
-  },
-];
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { services } from "@/data/services";
 
 const Services = () => {
   return (
@@ -72,13 +28,13 @@ const Services = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
+            <Link key={service.slug} to={`/services/${service.slug}`} className="block">
             <motion.div
-              key={service.title}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+              className="group h-full p-8 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
             >
               {/* Hover gradient effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -93,8 +49,12 @@ const Services = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   {service.description}
                 </p>
+                <span className="inline-flex items-center mt-4 text-sm font-semibold text-primary">
+                  Learn more <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
               </div>
             </motion.div>
+            </Link>
           ))}
         </div>
       </div>
