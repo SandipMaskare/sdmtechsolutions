@@ -18,6 +18,10 @@ interface Job {
   type: string;
   description: string | null;
   requirements: string[] | null;
+  kind: string;
+  duration: string | null;
+  stipend: string | null;
+  apply_url: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -34,6 +38,10 @@ const JobsManager = () => {
     type: "Full-time",
     description: "",
     requirements: "",
+    kind: "job",
+    duration: "",
+    stipend: "",
+    apply_url: "",
   });
   const { toast } = useToast();
 
@@ -65,6 +73,10 @@ const JobsManager = () => {
       type: formData.type,
       description: formData.description,
       requirements: formData.requirements.split("\n").filter(r => r.trim()),
+      kind: formData.kind,
+      duration: formData.duration.trim() || null,
+      stipend: formData.stipend.trim() || null,
+      apply_url: formData.apply_url.trim() || null,
     };
 
     if (editingJob) {
@@ -127,6 +139,10 @@ const JobsManager = () => {
       type: job.type,
       description: job.description || "",
       requirements: job.requirements?.join("\n") || "",
+      kind: job.kind || "job",
+      duration: job.duration || "",
+      stipend: job.stipend || "",
+      apply_url: job.apply_url || "",
     });
     setIsDialogOpen(true);
   };
@@ -140,6 +156,10 @@ const JobsManager = () => {
       type: "Full-time",
       description: "",
       requirements: "",
+      kind: "job",
+      duration: "",
+      stipend: "",
+      apply_url: "",
     });
   };
 
@@ -163,6 +183,18 @@ const JobsManager = () => {
               <DialogTitle>{editingJob ? "Edit Job" : "Add New Job"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Listing type</label>
+                <Select value={formData.kind} onValueChange={(value) => setFormData({ ...formData, kind: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="job">Job (shows on Careers)</SelectItem>
+                    <SelectItem value="internship">Internship (shows on Internships)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <label className="text-sm font-medium">Job Title</label>
                 <Input
@@ -202,6 +234,30 @@ const JobsManager = () => {
                     <SelectItem value="Remote">Remote</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              {formData.kind === "internship" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Duration</label>
+                    <Input value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} placeholder="e.g. 1 Month" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Stipend</label>
+                    <Input value={formData.stipend} onChange={(e) => setFormData({ ...formData, stipend: e.target.value })} placeholder="e.g. Unpaid / ₹5,000" />
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium">Google Form link (Apply button)</label>
+                <Input
+                  type="url"
+                  value={formData.apply_url}
+                  onChange={(e) => setFormData({ ...formData, apply_url: e.target.value })}
+                  placeholder="https://forms.gle/..."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Candidates are sent here when they click Apply. Leave empty to use the site-wide link (Content tab) or the built-in form.
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium">Description</label>
@@ -248,7 +304,7 @@ const JobsManager = () => {
                     <div>
                       <CardTitle className="text-lg">{job.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {job.department} • {job.location} • {job.type}
+                        {job.kind === "internship" ? "Internship" : "Job"} • {job.department} • {job.location} • {job.type}{job.apply_url ? " • Google Form linked" : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">

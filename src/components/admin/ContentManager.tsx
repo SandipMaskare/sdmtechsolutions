@@ -20,6 +20,8 @@ const sectionLabels: Record<string, { label: string; description: string; isText
   about_description: { label: "About Description", description: "Main description paragraph for the About section", isTextarea: true },
   company_phone: { label: "Company Phone", description: "Contact phone number", isTextarea: false },
   company_email: { label: "Company Email", description: "Contact email address", isTextarea: false },
+  internship_form_url: { label: "Internship Google Form link", description: "Default link for every internship Apply button (a link set on one listing overrides it)", isTextarea: false },
+  job_form_url: { label: "Job Google Form link", description: "Default link for every job Apply button (a link set on one listing overrides it)", isTextarea: false },
   company_address: { label: "Company Address", description: "Office address", isTextarea: false },
 };
 
