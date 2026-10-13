@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AppRole, pickRole } from "@/lib/roles";
 
 export const useUserRole = () => {
-  const [role, setRole] = useState<"admin" | "employee" | null>(null);
+  const [role, setRole] = useState<AppRole | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -32,13 +33,7 @@ export const useUserRole = () => {
 
       const roles = rolesRes.data || [];
       setProfile(profileRes.data);
-      setRole(
-        roles.some((r) => r.role === "admin")
-          ? "admin"
-          : roles.length
-          ? "employee"
-          : null
-      );
+      setRole(pickRole(roles));
       setLoading(false);
     };
 
