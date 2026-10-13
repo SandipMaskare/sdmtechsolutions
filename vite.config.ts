@@ -14,6 +14,16 @@ export default defineConfig({
     include: ["react", "react-dom"],
   },
   build: {
+    rollupOptions: {
+      output: {
+        // Split big libraries into separate files so they are cached between visits
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          supabase: ["@supabase/supabase-js"],
+          motion: ["framer-motion"],
+        },
+      },
+    },
     commonjsOptions: {
       transformMixedEsModules: true,
     },
