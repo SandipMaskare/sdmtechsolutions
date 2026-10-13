@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   FileText,
   ClipboardList,
+  Mail,
+  MessagesSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +22,8 @@ import TestimonialsManager from "@/components/admin/TestimonialsManager";
 import ContactSubmissions from "@/components/admin/ContactSubmissions";
 import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
+import EmailCenter from "@/components/admin/EmailCenter";
+import ChatInbox from "@/components/admin/ChatInbox";
 import sdmLogo from "@/assets/sdm-logo.webp";
 
 const Admin = () => {
@@ -100,7 +104,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-6">
+          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-8 h-auto">
             <TabsTrigger value="jobs">
               <Briefcase className="w-4 h-4" /> Jobs
             </TabsTrigger>
@@ -115,6 +119,12 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="messages">
               <MessageSquare className="w-4 h-4" /> Messages
+            </TabsTrigger>
+            <TabsTrigger value="email">
+              <Mail className="w-4 h-4" /> Email
+            </TabsTrigger>
+            <TabsTrigger value="chat">
+              <MessagesSquare className="w-4 h-4" /> Chat
             </TabsTrigger>
             <TabsTrigger value="content">
               <FileText className="w-4 h-4" /> Content
@@ -135,6 +145,12 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="messages">
             <ContactSubmissions />
+          </TabsContent>
+          <TabsContent value="email">
+            <EmailCenter />
+          </TabsContent>
+          <TabsContent value="chat">
+            <ChatInbox />
           </TabsContent>
           <TabsContent value="content">
             <ContentManager />
