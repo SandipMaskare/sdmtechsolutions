@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Suspense, lazy } from "react";
 import RequireRole from "@/components/portal/RequireRole";
-import PageNav from "@/components/PageNav";
 
 const ChatWidget = lazy(() => import("@/components/ChatWidget"));
 
@@ -100,7 +99,6 @@ const App = () => (
 
             <ChatWidget />
           </Suspense>
-          <PageNav />
 
         </BrowserRouter>
       </TooltipProvider>
