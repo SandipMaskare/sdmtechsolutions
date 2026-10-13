@@ -55,6 +55,17 @@ const Contact = () => {
         title: "Message Sent!",
         description: "We'll get back to you as soon as possible.",
       });
+      // Also email the company inbox (best effort - the message is already saved above).
+      supabase.functions
+        .invoke("send-email", {
+          body: {
+            type: "contact",
+            name: formData.name,
+            email: formData.email,
+            message: `${formData.subject}\n\n${formData.message}`,
+          },
+        })
+        .catch(() => undefined);
       setFormData({ name: "", email: "", subject: "", message: "" });
     }
   };
