@@ -4,6 +4,7 @@ import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
 import { cn } from "@/lib/utils";
 
@@ -34,11 +35,14 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
     <div className="min-h-screen bg-muted/30">
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+          <PageNav />
           <Link to={c.base} className="flex items-center gap-3">
             <img src={sdmLogo} alt="SDM Technology" className="h-9" width={36} height={36} />
             <span className="font-display font-semibold text-foreground hidden sm:block">{c.title}</span>
             <Badge variant="secondary" className="capitalize">{kind}</Badge>
           </Link>
+          </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <span className="text-sm text-muted-foreground hidden md:block max-w-[200px] truncate">{user?.email}</span>
             <Button variant="ghost" size="sm" asChild>
