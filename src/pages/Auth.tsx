@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, Phone, CalendarDays, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import sdmLogo from "@/assets/sdm-logo.jpg";
+import sdmLogo from "@/assets/sdm-logo.webp";
+import { homePath, pickRole } from "@/lib/roles";
 
 // Mobile OTP needs an SMS provider (Twilio etc.) enabled in Supabase.
 // Set VITE_ENABLE_PHONE_OTP="true" in Vercel once that is done.
@@ -65,12 +66,8 @@ const Auth = () => {
   const isLogin = mode === "login";
 
   const goHome = async (userId: string) => {
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    navigate(roleData?.role ? "/crm/dashboard" : "/");
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    navigate(homePath(pickRole(data)));
   };
 
   // After a session exists: require mobile verification (if enabled) before entering.
@@ -437,6 +434,13 @@ const Auth = () => {
                 <button onClick={() => { setMode(isLogin ? "signup" : "login"); setErrors({}); }} className="text-primary hover:underline font-medium">
                   {isLogin ? "Sign up" : "Sign in"}
                 </button>
+              </p>
+            )}
+            {!verifying && (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Part of the team? <Link to="/employee/login" className="text-primary hover:underline">Employee login</Link>
+                {" · "}
+                <Link to="/intern/login" className="text-primary hover:underline">Intern login</Link>
               </p>
             )}
           </div>

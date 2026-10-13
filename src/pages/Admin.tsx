@@ -20,7 +20,7 @@ import TestimonialsManager from "@/components/admin/TestimonialsManager";
 import ContactSubmissions from "@/components/admin/ContactSubmissions";
 import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
-import sdmLogo from "@/assets/sdm-logo.jpg";
+import sdmLogo from "@/assets/sdm-logo.webp";
 
 const Admin = () => {
   const navigate = useNavigate();
