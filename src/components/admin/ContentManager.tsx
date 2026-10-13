@@ -22,6 +22,8 @@ const sectionLabels: Record<string, { label: string; description: string; isText
   company_email: { label: "Company Email", description: "Contact email address", isTextarea: false },
   internship_form_url: { label: "Internship Google Form link", description: "Default link for every internship Apply button (a link set on one listing overrides it)", isTextarea: false },
   job_form_url: { label: "Job Google Form link", description: "Default link for every job Apply button (a link set on one listing overrides it)", isTextarea: false },
+  chat_enabled: { label: "Chat support on website", description: "Type yes to show the chat button to visitors, or no to hide it", isTextarea: false },
+  chat_welcome_message: { label: "Chat welcome message", description: "First message visitors see when they open the chat", isTextarea: true },
   company_address: { label: "Company Address", description: "Office address", isTextarea: false },
 };
 

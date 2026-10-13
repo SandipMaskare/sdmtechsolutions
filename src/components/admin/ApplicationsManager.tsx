@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, ExternalLink, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, Mail, Trash2 } from "lucide-react";
+import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
+import EmailComposer from "./EmailComposer";
 
 interface Application {
   id: string;
@@ -20,6 +22,7 @@ interface Application {
 const ApplicationsManager = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [emailId, setEmailId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -89,24 +92,31 @@ const ApplicationsManager = () => {
                   {app.status}
                 </Badge>
               </div>
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {app.status !== "reviewed" && (
                   <Button size="sm" onClick={() => updateStatus(app.id, "reviewed")}>
                     <CheckCircle className="w-4 h-4 mr-1" /> Mark Reviewed
                   </Button>
                 )}
                 {app.resume_url && (
-                  <Button size="sm" variant="outline" onClick={async () => {
-                    const { data } = await supabase.storage.from("resumes").createSignedUrl(app.resume_url!, 3600);
-                    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-                  }}>
-                    <ExternalLink className="w-4 h-4 mr-1" /> Resume
-                  </Button>
+                  <FilePreviewButtons bucket="resumes" path={app.resume_url} label="Resume" />
                 )}
+                <Button size="sm" variant="outline" onClick={() => setEmailId(emailId === app.id ? null : app.id)}>
+                  <Mail className="w-4 h-4 mr-1" /> Email
+                </Button>
                 <Button size="sm" variant="destructive" onClick={() => deleteApplication(app.id)}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
+              {emailId === app.id && (
+                <div className="mt-4 rounded-lg border border-border p-4">
+                  <EmailComposer
+                    initialTo={app.email}
+                    initialSubject="Your application at SDM Technology"
+                    onSent={() => setEmailId(null)}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>

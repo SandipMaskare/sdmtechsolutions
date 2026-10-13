@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import EmailComposer from "./EmailComposer";
 
 interface ContactSubmission {
   id: string;
@@ -22,6 +23,7 @@ const ContactSubmissions = () => {
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [replyId, setReplyId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -142,12 +144,21 @@ const ContactSubmissions = () => {
                     <div className="bg-muted/50 rounded-lg p-4 mt-2">
                       <p className="text-sm text-foreground whitespace-pre-wrap">{submission.message}</p>
                     </div>
-                    <div className="mt-3">
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`mailto:${submission.email}?subject=Re: ${submission.subject}`}>
-                          Reply via Email
-                        </a>
-                      </Button>
+                    <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                      {replyId === submission.id ? (
+                        <div className="rounded-lg border border-border p-4 bg-card">
+                          <EmailComposer
+                            initialTo={submission.email}
+                            initialSubject={`Re: ${submission.subject}`}
+                            original={{ from: `${submission.name} <${submission.email}>`, subject: submission.subject, message: submission.message }}
+                            onSent={() => setReplyId(null)}
+                          />
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" onClick={() => setReplyId(submission.id)}>
+                          Reply (with Gemini help)
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 )}
