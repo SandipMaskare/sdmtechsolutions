@@ -15,10 +15,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import sdmLogo from "@/assets/sdm-logo.jpg";
+import sdmLogo from "@/assets/sdm-logo.webp";
 
 interface CRMSidebarProps {
-  userRole: "admin" | "employee";
+  userRole: string;
 }
 
 const CRMSidebar = ({ userRole }: CRMSidebarProps) => {
