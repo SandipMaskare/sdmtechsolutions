@@ -127,6 +127,10 @@ export type Database = {
           title: string
           type: string
           updated_at: string
+          apply_url: string | null
+          duration: string | null
+          kind: string
+          stipend: string | null
         }
         Insert: {
           created_at?: string
@@ -139,6 +143,10 @@ export type Database = {
           title: string
           type?: string
           updated_at?: string
+          apply_url?: string | null
+          duration?: string | null
+          kind?: string
+          stipend?: string | null
         }
         Update: {
           created_at?: string
@@ -151,6 +159,10 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+          apply_url?: string | null
+          duration?: string | null
+          kind?: string
+          stipend?: string | null
         }
         Relationships: []
       }
@@ -167,6 +179,7 @@ export type Database = {
           position: string | null
           updated_at: string
           user_id: string
+          dob: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -180,6 +193,7 @@ export type Database = {
           position?: string | null
           updated_at?: string
           user_id: string
+          dob?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -193,6 +207,7 @@ export type Database = {
           position?: string | null
           updated_at?: string
           user_id?: string
+          dob?: string | null
         }
         Relationships: []
       }
@@ -305,6 +320,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          task_type: string
         }
         Insert: {
           assigned_by?: string | null
@@ -317,6 +333,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          task_type?: string
         }
         Update: {
           assigned_by?: string | null
@@ -329,6 +346,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          task_type?: string
         }
         Relationships: [
           {
@@ -453,7 +471,7 @@ export type Database = {
       is_admin_or_employee: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "employee"
+      app_role: "admin" | "employee" | "intern"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -581,7 +599,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "employee"],
+      app_role: ["admin", "employee", "intern"],
     },
   },
 } as const
