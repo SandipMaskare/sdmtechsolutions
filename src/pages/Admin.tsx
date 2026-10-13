@@ -24,6 +24,7 @@ import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import EmailCenter from "@/components/admin/EmailCenter";
 import ChatInbox from "@/components/admin/ChatInbox";
+import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
 
 const Admin = () => {
@@ -79,6 +80,7 @@ const Admin = () => {
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <PageNav />
             <a href="/">
               <img src={sdmLogo} alt="SDM Technology" className="h-10" />
             </a>
