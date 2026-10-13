@@ -1,3 +1,4 @@
+import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -289,20 +290,9 @@ const SubmissionsPage = () => {
                 {selectedSubmission.file_url && (
                   <div>
                     <Label className="text-muted-foreground">File</Label>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const { data } = await supabase.storage
-                          .from("task-submissions")
-                          .createSignedUrl(selectedSubmission.file_url!, 3600);
-                        if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-                        else toast({ title: "Error", description: "Could not open file", variant: "destructive" });
-                      }}
-                      className="flex items-center gap-2 text-primary hover:underline"
-                    >
-                      <FileText className="h-4 w-4" />
-                      View File
-                    </button>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <FilePreviewButtons bucket="task-submissions" path={selectedSubmission.file_url!} label="Download file" />
+                    </div>
                   </div>
                 )}
 
