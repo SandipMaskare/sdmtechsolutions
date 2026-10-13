@@ -51,6 +51,7 @@ const EmployeesPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [roleMap, setRoleMap] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
@@ -90,6 +91,14 @@ const EmployeesPage = () => {
     }
 
     setEmployees(data || []);
+
+    const { data: roleRows } = await supabase.from("user_roles").select("user_id, role");
+    const map: Record<string, string> = {};
+    (roleRows || []).forEach((r) => {
+      const rank = (x: string) => (x === "admin" ? 3 : x === "employee" ? 2 : 1);
+      if (!map[r.user_id] || rank(r.role) > rank(map[r.user_id])) map[r.user_id] = r.role;
+    });
+    setRoleMap(map);
   };
 
   const handleToggleActive = async (employee: Employee) => {
@@ -146,15 +155,14 @@ const EmployeesPage = () => {
     fetchEmployees();
   };
 
-  const handleAssignRole = async (userId: string, role: "admin" | "employee") => {
+  const handleAssignRole = async (userId: string, role: "admin" | "employee" | "intern" | "none") => {
     // First remove existing roles
     await supabase.from("user_roles").delete().eq("user_id", userId);
 
-    // Add new role
-    const { error } = await supabase.from("user_roles").insert({
-      user_id: userId,
-      role: role,
-    });
+    // Add new role (normal users have no role row)
+    const { error } = role === "none"
+      ? { error: null }
+      : await supabase.from("user_roles").insert({ user_id: userId, role });
 
     if (error) {
       toast({
@@ -167,8 +175,9 @@ const EmployeesPage = () => {
 
     toast({
       title: "Success",
-      description: `Role assigned successfully`,
+      description: `Role updated successfully`,
     });
+    fetchEmployees();
   };
 
   const filteredEmployees = employees.filter(
@@ -231,6 +240,7 @@ const EmployeesPage = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Position</TableHead>
+                  <TableHead>Login type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -242,6 +252,17 @@ const EmployeesPage = () => {
                     <TableCell>{employee.email}</TableCell>
                     <TableCell>{employee.department || "-"}</TableCell>
                     <TableCell>{employee.position || "-"}</TableCell>
+                    <TableCell>
+                      <Badge variant={roleMap[employee.user_id] ? "default" : "outline"}>
+                        {roleMap[employee.user_id] === "admin"
+                          ? "Admin"
+                          : roleMap[employee.user_id] === "employee"
+                          ? "Employee"
+                          : roleMap[employee.user_id] === "intern"
+                          ? "Intern"
+                          : "Normal user"}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={employee.is_active ? "default" : "secondary"}>
                         {employee.is_active ? "Active" : "Inactive"}
@@ -275,9 +296,19 @@ const EmployeesPage = () => {
                             Assign as Employee
                           </DropdownMenuItem>
                           <DropdownMenuItem
+                            onClick={() => handleAssignRole(employee.user_id, "intern")}
+                          >
+                            Assign as Intern
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
                             onClick={() => handleAssignRole(employee.user_id, "admin")}
                           >
                             Assign as Admin
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleAssignRole(employee.user_id, "none")}
+                          >
+                            Make normal user (remove access)
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleToggleActive(employee)}

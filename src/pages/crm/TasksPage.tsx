@@ -49,6 +49,7 @@ interface Task {
   assigned_by: string | null;
   priority: string;
   status: string;
+  task_type?: string;
   deadline: string | null;
   created_at: string;
   assignee_name?: string;
@@ -57,6 +58,7 @@ interface Task {
 interface Employee {
   user_id: string;
   full_name: string;
+  role?: string;
 }
 
 const TasksPage = () => {
@@ -74,6 +76,7 @@ const TasksPage = () => {
     assigned_to: "",
     priority: "medium",
     deadline: "",
+    task_type: "task",
   });
 
   useEffect(() => {
@@ -122,10 +125,28 @@ const TasksPage = () => {
     setTasks(tasksWithNames);
   };
 
+  // Only users with an employee/intern role can see tasks in their portal,
+  // so only they are offered in the "Assign To" list.
   const fetchEmployees = async () => {
+    const { data: roleRows, error: roleError } = await supabase
+      .from("user_roles")
+      .select("user_id, role")
+      .in("role", ["employee", "intern"]);
+
+    if (roleError) {
+      console.error("Error fetching roles:", roleError);
+      return;
+    }
+    const ids = (roleRows || []).map((r) => r.user_id);
+    if (ids.length === 0) {
+      setEmployees([]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("profiles")
       .select("user_id, full_name")
+      .in("user_id", ids)
       .eq("is_active", true);
 
     if (error) {
@@ -133,7 +154,8 @@ const TasksPage = () => {
       return;
     }
 
-    setEmployees(data || []);
+    const roleOf = new Map((roleRows || []).map((r) => [r.user_id, r.role as string]));
+    setEmployees((data || []).map((e) => ({ ...e, role: roleOf.get(e.user_id) })));
   };
 
   const handleCreateTask = async () => {
@@ -144,6 +166,7 @@ const TasksPage = () => {
       assigned_by: user?.id,
       priority: formData.priority,
       deadline: formData.deadline || null,
+      task_type: formData.task_type,
     });
 
     if (error) {
@@ -167,6 +190,7 @@ const TasksPage = () => {
       assigned_to: "",
       priority: "medium",
       deadline: "",
+      task_type: "task",
     });
     fetchTasks();
   };
@@ -182,6 +206,7 @@ const TasksPage = () => {
         assigned_to: formData.assigned_to || null,
         priority: formData.priority,
         deadline: formData.deadline || null,
+        task_type: formData.task_type,
       })
       .eq("id", editingTask.id);
 
@@ -318,14 +343,29 @@ const TasksPage = () => {
                     onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select employee" />
+                      <SelectValue placeholder="Select employee or intern" />
                     </SelectTrigger>
                     <SelectContent>
                       {employees.map((emp) => (
                         <SelectItem key={emp.user_id} value={emp.user_id}>
-                          {emp.full_name}
+                          {emp.full_name}{emp.role === "intern" ? " (Intern)" : " (Employee)"}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select
+                    value={formData.task_type}
+                    onValueChange={(value) => setFormData({ ...formData, task_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="task">Task (employees)</SelectItem>
+                      <SelectItem value="project">Project (interns)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -430,6 +470,7 @@ const TasksPage = () => {
                                 assigned_to: task.assigned_to || "",
                                 priority: task.priority,
                                 deadline: task.deadline?.split("T")[0] || "",
+                                task_type: task.task_type || "task",
                               });
                             }}
                           >
@@ -487,14 +528,29 @@ const TasksPage = () => {
                   onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select employee" />
+                    <SelectValue placeholder="Select employee or intern" />
                   </SelectTrigger>
                   <SelectContent>
                     {employees.map((emp) => (
                       <SelectItem key={emp.user_id} value={emp.user_id}>
-                        {emp.full_name}
+                        {emp.full_name}{emp.role === "intern" ? " (Intern)" : " (Employee)"}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Select
+                  value={formData.task_type}
+                  onValueChange={(value) => setFormData({ ...formData, task_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="task">Task (employees)</SelectItem>
+                    <SelectItem value="project">Project (interns)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
