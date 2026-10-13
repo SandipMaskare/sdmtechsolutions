@@ -1,11 +1,10 @@
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PortalLayout, { PortalKind, portalCopy } from "@/components/portal/PortalLayout";
 import { usePortalTasks } from "@/hooks/usePortalTasks";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
 
 const reviewBadge = (s: string | null) =>
   s === "approved" ? <Badge className="bg-green-600">Approved</Badge>
@@ -15,14 +14,7 @@ const reviewBadge = (s: string | null) =>
 const PortalSubmissions = ({ kind }: { kind: PortalKind }) => {
   const c = portalCopy[kind];
   const { tasks, submissions, loading } = usePortalTasks();
-  const { toast } = useToast();
   const titleOf = (id: string) => tasks.find((t) => t.id === id)?.title || "Removed " + c.workOne;
-
-  const openFile = async (path: string) => {
-    const { data, error } = await supabase.storage.from("task-submissions").createSignedUrl(path, 300);
-    if (error || !data) return toast({ title: "Could not open file", description: error?.message, variant: "destructive" });
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-  };
 
   return (
     <PortalLayout kind={kind}>
@@ -52,9 +44,7 @@ const PortalSubmissions = ({ kind }: { kind: PortalKind }) => {
                   )}
                   <div className="flex flex-wrap gap-2">
                     {s.file_url && (
-                      <Button variant="outline" size="sm" onClick={() => openFile(s.file_url!)}>
-                        <FileText className="w-4 h-4 mr-1" /> Open file
-                      </Button>
+                      <FilePreviewButtons bucket="task-submissions" path={s.file_url} label="Download file" />
                     )}
                     {s.external_link && (
                       <Button variant="outline" size="sm" asChild>
