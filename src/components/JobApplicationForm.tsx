@@ -64,7 +64,7 @@ const JobApplicationForm = ({ jobId, onDone }: { jobId: string; onDone?: () => v
         .upload(filePath, resumeFile, { contentType: resumeFile.type || undefined, upsert: false });
       if (uploadError) return fail("Resume upload failed", uploadError.message);
 
-      const { error } = await supabase.from("job_applications").insert({
+      const { data: created, error } = await supabase.from("job_applications").insert({
         user_id: user.id,
         job_id: jobId,
         full_name: fullName.trim(),
@@ -72,10 +72,14 @@ const JobApplicationForm = ({ jobId, onDone }: { jobId: string; onDone?: () => v
         phone: phone.trim() || null,
         resume_url: filePath,
         cover_letter: coverLetter.trim() || null,
-      });
+      }).select("id").single();
       if (error) {
         await supabase.storage.from("resumes").remove([filePath]);
         return fail("Application failed", error.message);
+      }
+      // Best-effort automatic confirmation email; never blocks the success flow
+      if (created?.id) {
+        supabase.functions.invoke("application-confirm", { body: { application_id: created.id } }).catch(() => {});
       }
       toast({ title: "Application submitted!", description: "We'll review it and get back to you soon." });
       onDone?.();
