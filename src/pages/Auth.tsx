@@ -11,12 +11,13 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import sdmLogo from "@/assets/sdm-logo.webp";
 import { homePath, pickRole } from "@/lib/roles";
+import { requestLoginCode, sendLoginCode, verifyLoginCode } from "@/lib/loginOtp";
 
 // Mobile OTP needs an SMS provider (Twilio etc.) enabled in Supabase.
 // Set VITE_ENABLE_PHONE_OTP="true" in Vercel once that is done.
 const PHONE_OTP = import.meta.env.VITE_ENABLE_PHONE_OTP === "true";
 
-type Mode = "login" | "signup" | "verifyEmail" | "verifyPhone";
+type Mode = "login" | "signup" | "verifyEmail" | "verifyPhone" | "verifyLogin";
 
 const emailSchema = z.string().trim().email("Please enter a valid email address");
 const strongPassword = z
@@ -62,7 +63,7 @@ const Auth = () => {
   const { toast } = useToast();
   // While the user is in a verification step we must not auto-redirect them away.
   const inFlow = useRef(false);
-  inFlow.current = mode === "verifyEmail" || mode === "verifyPhone";
+  inFlow.current = mode === "verifyEmail" || mode === "verifyPhone" || mode === "verifyLogin";
 
   const isLogin = mode === "login";
 
@@ -140,24 +141,24 @@ const Auth = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) {
-          if (error.message.toLowerCase().includes("email not confirmed")) {
+        // Two-step login: password first, then a 6-digit code sent to the email.
+        inFlow.current = true; // stop the auto-redirect while the code step is pending
+        const res = await requestLoginCode(email.trim(), password);
+        if (!res.ok) {
+          inFlow.current = false;
+          if (res.message.toLowerCase().includes("email not confirmed")) {
             await supabase.auth.resend({ type: "signup", email: email.trim() });
             setOtp("");
             setMode("verifyEmail");
             toast({ title: "Verify your email", description: "We sent a new code to your email." });
           } else {
-            toast({
-              title: "Login Failed",
-              description: error.message.includes("Invalid login credentials")
-                ? "Invalid email or password. Please try again."
-                : error.message,
-              variant: "destructive",
-            });
+            toast({ title: "Login Failed", description: res.message, variant: "destructive" });
           }
         } else {
-          toast({ title: "Welcome back!", description: "You have successfully logged in." });
+          setOtp("");
+          setCooldown(60);
+          setMode("verifyLogin");
+          toast({ title: "Check your email", description: `We sent a 6-digit login code to ${email.trim()}` });
         }
       } else {
         const p = normalizePhone(phone)!;
@@ -214,6 +215,22 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const verifyLogin = async () => {
+    if (otp.length < 6) return;
+    setLoading(true);
+    const { data, error } = await verifyLoginCode(email.trim(), otp);
+    if (error || !data.user) {
+      toast({ title: "Invalid or expired code", description: error?.message ?? "Please try again.", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+    toast({ title: "Welcome back!", description: "You have successfully logged in." });
+    setOtp("");
+    inFlow.current = false;
+    await continueAfterSession(data.user as any);
+    setLoading(false);
+  };
+
   const verifyPhone = async () => {
     if (otp.length < 6) return;
     setLoading(true);
@@ -235,13 +252,20 @@ const Auth = () => {
 
   const resend = async () => {
     if (cooldown > 0) return;
-    const { error } =
-      mode === "verifyEmail"
-        ? await supabase.auth.resend({ type: "signup", email: email.trim() })
-        : await supabase.auth.updateUser({ phone });
-    if (error) toast({ title: "Could not resend", description: error.message, variant: "destructive" });
+    let err: string | null = null;
+    if (mode === "verifyLogin") {
+      const r = await sendLoginCode(email.trim());
+      if (!r.ok) err = r.message;
+    } else {
+      const { error } =
+        mode === "verifyEmail"
+          ? await supabase.auth.resend({ type: "signup", email: email.trim() })
+          : await supabase.auth.updateUser({ phone });
+      if (error) err = error.message;
+    }
+    if (err) toast({ title: "Could not resend", description: err, variant: "destructive" });
     else {
-      setCooldown(30);
+      setCooldown(mode === "verifyLogin" ? 60 : 30);
       toast({ title: "Code sent" });
     }
   };
@@ -274,7 +298,7 @@ const Auth = () => {
     </div>
   );
 
-  const verifying = mode === "verifyEmail" || mode === "verifyPhone";
+  const verifying = mode === "verifyEmail" || mode === "verifyPhone" || mode === "verifyLogin";
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
@@ -288,12 +312,14 @@ const Auth = () => {
             <h1 className="text-2xl font-bold text-foreground font-display">
               {mode === "login" && "Welcome Back"}
               {mode === "signup" && "Create Account"}
+              {mode === "verifyLogin" && "Enter your login code"}
               {mode === "verifyEmail" && "Verify your email"}
               {mode === "verifyPhone" && "Verify your mobile"}
             </h1>
             <p className="text-muted-foreground mt-2">
               {mode === "login" && "Sign in to access your account"}
               {mode === "signup" && "Join SDM Technology today"}
+              {mode === "verifyLogin" && `For your security, enter the 6-digit code we emailed to ${email}`}
               {mode === "verifyEmail" && `Enter the 6-digit code sent to ${email}`}
               {mode === "verifyPhone" && `Enter the 6-digit code sent to ${phone}`}
             </p>
@@ -314,7 +340,7 @@ const Auth = () => {
                 className="w-full bg-primary hover:bg-sdm-teal-dark text-primary-foreground font-semibold"
                 size="lg"
                 disabled={loading || otp.length < 6}
-                onClick={mode === "verifyEmail" ? verifyEmail : verifyPhone}
+                onClick={mode === "verifyLogin" ? verifyLogin : mode === "verifyEmail" ? verifyEmail : verifyPhone}
               >
                 <ShieldCheck className="mr-2 w-5 h-5" />
                 {loading ? "Verifying..." : "Verify"}
