@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { callFunction } from "@/lib/functions";
 import {
-  OFFER_CSS, OFFER_FONTS, OfferItem, blobToBase64, letterHtml, letterToPdf, pdfName,
+  OFFER_CSS, OFFER_FONTS, OfferItem, blobToBase64, letterHtml, scheduleHtml, letterToPdf, pdfName,
 } from "./offerLetterTemplate";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -17,7 +17,7 @@ function parseRows(text: string) {
     .split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
     .map((l) => {
       const c = (l.includes("\t") ? l.split("\t") : l.split(",")).map((x) => x.trim().replace(/^"|"$/g, ""));
-      return { name: c[0] || "", email: c[1] || "", role: c[2] || "", start: c[3] || "", end: c[4] || "" };
+      return { name: c[0] || "", email: c[1] || "", role: c[2] || "", start: c[3] || "", end: c[4] || "", id: c[5] || "" };
     })
     .filter((r) => r.name && !/^name$/i.test(r.name));
 }
@@ -35,9 +35,10 @@ const OfferLetters = () => {
   const [ldate, setLdate] = useState(today());
   const [days, setDays] = useState("2");
   const [drole, setDrole] = useState("Java Programming Intern");
-  const [signer, setSigner] = useState("Sandip Maskare");
-  const [dstart, setDstart] = useState("");
+    const [dstart, setDstart] = useState("");
   const [dend, setDend] = useState("");
+  const [startNo, setStartNo] = useState("1");
+  const [fee, setFee] = useState("149");
   const [subject, setSubject] = useState("Your Internship Offer Letter – SDM Technology");
   const [rows, setRows] = useState("");
   const [sel, setSel] = useState(0);
@@ -61,13 +62,14 @@ const OfferLetters = () => {
   }, []);
 
   const items: OfferItem[] = useMemo(
-    () => parseRows(rows).map((r) => ({
-      ...r, role: r.role || drole, start: r.start || dstart, end: r.end || dend, ldate, days, signer,
+    () => parseRows(rows).map((r, i) => ({
+      ...r, fee, id: r.id || `SDM/C/${(parseInt(startNo, 10) || 1) + i}`,
+      role: r.role || drole, start: r.start || dstart, end: r.end || dend, ldate, days,
     })),
-    [rows, drole, dstart, dend, ldate, days, signer],
+    [rows, drole, dstart, dend, ldate, days, startNo, fee],
   );
   const shown: OfferItem = items[Math.min(sel, items.length - 1)] ?? {
-    name: "Intern Name", email: "", role: drole, start: dstart, end: dend, ldate, days, signer,
+    id: `SDM/C/${parseInt(startNo, 10) || 1}`, fee, name: "Intern Name", email: "", role: drole, start: dstart, end: dend, ldate, days,
   };
 
   const download = async (it: OfferItem) => {
@@ -97,7 +99,7 @@ const OfferLetters = () => {
     try {
       const pdf = await blobToBase64(await letterToPdf(it));
       const text =
-        `Dear ${it.name},\n\nCongratulations! Please find attached your offer letter for the ${it.role} internship at SDM Technology ` +
+        `Dear ${it.name},\n\nCongratulations! Please find attached your offer letter with Schedule A (Intern ID: ${it.id}) for the ${it.role} internship at SDM Technology ` +
         `(${it.start ? it.start : "start date"} to ${it.end ? it.end : "end date"}).\n\nKindly review it and accept it within ${it.days} days.\n\n` +
         `Best regards,\nHR Team – SDM Technology\nhttps://sdmtechsolution.com`;
       const { error } = await callFunction("send-email", {
@@ -132,16 +134,17 @@ const OfferLetters = () => {
             <div><Label>Letter date</Label><Input type="date" value={ldate} onChange={(e) => setLdate(e.target.value)} /></div>
             <div><Label>Accept within (days)</Label><Input type="number" min={1} value={days} onChange={(e) => setDays(e.target.value)} /></div>
             <div><Label>Default internship</Label><Input value={drole} onChange={(e) => setDrole(e.target.value)} /></div>
-            <div><Label>Signed by</Label><Input value={signer} onChange={(e) => setSigner(e.target.value)} /></div>
+            <div><Label>First Intern ID number (SDM/C/…)</Label><Input type="number" min={1} value={startNo} onChange={(e) => setStartNo(e.target.value)} /></div>
+            <div><Label>Document processing fee (₹)</Label><Input type="number" min={0} value={fee} onChange={(e) => setFee(e.target.value)} /></div>
             <div><Label>Default start date</Label><Input type="date" value={dstart} onChange={(e) => setDstart(e.target.value)} /></div>
             <div><Label>Default end date</Label><Input type="date" value={dend} onChange={(e) => setDend(e.target.value)} /></div>
           </div>
           <div><Label>Email subject</Label><Input value={subject} onChange={(e) => setSubject(e.target.value)} /></div>
           <div>
-            <Label>Interns — one per line: Name, Email, Role, Start, End</Label>
+            <Label>Interns — one per line: Name, Email, Role, Start, End, ID(optional)</Label>
             <Textarea rows={6} className="font-mono text-xs" value={rows} onChange={(e) => { setRows(e.target.value); setSel(0); }}
               placeholder={"Rahul Patil, rahul@gmail.com, Web Development Intern, 2026-11-01, 2026-12-01\nSneha More, sneha@gmail.com, , ,"} />
-            <p className="text-xs text-muted-foreground mt-1">Copy rows straight from your Google Sheet. Leave role/dates empty to use the defaults.</p>
+            <p className="text-xs text-muted-foreground mt-1">Copy rows straight from your Google Sheet. Leave role/dates empty to use the defaults. IDs are numbered automatically (SDM/C/1, SDM/C/2…) from the number above, or type your own in the 6th column.</p>
           </div>
         </div>
 
@@ -183,10 +186,12 @@ const OfferLetters = () => {
         </div>
       </div>
 
-      <div ref={wrap} className="rounded-xl border border-border bg-card p-2 overflow-hidden">
-        <div style={{ width: 744 * scale, height: 1052 * scale }}>
-          <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 744 }} dangerouslySetInnerHTML={{ __html: letterHtml(shown) }} />
-        </div>
+      <div ref={wrap} className="rounded-xl border border-border bg-card p-2 overflow-auto space-y-3">
+        {[letterHtml(shown), scheduleHtml(shown)].map((h, i) => (
+          <div key={i} style={{ width: 744 * scale, height: 1052 * scale }}>
+            <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 744 }} dangerouslySetInnerHTML={{ __html: h }} />
+          </div>
+        ))}
       </div>
     </div>
   );
