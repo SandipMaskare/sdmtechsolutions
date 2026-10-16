@@ -1,5 +1,5 @@
 import PageNav from "@/components/PageNav";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, Briefcase, GraduationCap } from "lucide-react";
@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { homePath, pickRole } from "@/lib/roles";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { requestLoginCode, sendLoginCode, verifyLoginCode } from "@/lib/loginOtp";
 import sdmLogo from "@/assets/sdm-logo.webp";
 
 type Kind = "employee" | "intern";
@@ -38,15 +36,6 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<"password" | "code">("password");
-  const [code, setCode] = useState("");
-  const [cooldown, setCooldown] = useState(0);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown((n) => n - 1), 1000);
-    return () => clearTimeout(t);
-  }, [cooldown]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,33 +44,18 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
       return;
     }
     setLoading(true);
-    const res = await requestLoginCode(email.trim(), password);
-    if (!res.ok) {
-      toast({ title: "Login failed", description: res.message, variant: "destructive" });
-      setLoading(false);
-      return;
-    }
-    setCode("");
-    setCooldown(60);
-    setStep("code");
-    toast({ title: "Check your email", description: `We sent a 6-digit login code to ${email.trim()}` });
-    setLoading(false);
-  };
-
-  const resend = async () => {
-    if (cooldown > 0) return;
-    const r = await sendLoginCode(email.trim());
-    if (!r.ok) return toast({ title: "Could not resend", description: r.message, variant: "destructive" });
-    setCooldown(60);
-    toast({ title: "Code sent" });
-  };
-
-  const verify = async () => {
-    if (code.length < 6) return;
-    setLoading(true);
-    const { data, error } = await verifyLoginCode(email.trim(), code);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error || !data.user) {
-      toast({ title: "Invalid or expired code", description: error?.message, variant: "destructive" });
+      const m = (error?.message ?? "").toLowerCase();
+      toast({
+        title: "Login failed",
+        description: m.includes("invalid login credentials")
+          ? "Invalid email or password. Please try again."
+          : m.includes("email not confirmed")
+            ? "Please verify your email first from the user login page."
+            : error?.message,
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -89,18 +63,12 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
     const role = pickRole(roles);
 
-    if (role === kind) {
-      navigate(homePath(role), { replace: true });
-      return;
-    }
-    if (role === "admin") {
+    if (role === kind || role === "admin") {
       navigate(homePath(role), { replace: true });
       return;
     }
 
     await supabase.auth.signOut();
-    setStep("password");
-    setCode("");
     toast({
       title: `This account is not an ${kind} account`,
       description:
@@ -128,31 +96,6 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
             <p className="text-muted-foreground mt-2 text-sm">{c.sub}</p>
           </div>
 
-          {step === "code" ? (
-            <div className="space-y-6">
-              <p className="text-center text-sm text-muted-foreground">Enter the 6-digit code we emailed to <b>{email}</b>.</p>
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={code} onChange={setCode}>
-                  <InputOTPGroup>
-                    {[0, 1, 2, 3, 4, 5].map((i) => <InputOTPSlot key={i} index={i} />)}
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-              <Button size="lg" className="w-full" disabled={loading || code.length < 6} onClick={verify}>
-                <ShieldCheck className="w-5 h-5 mr-2" />
-                {loading ? "Verifying..." : "Verify and sign in"}
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Didn't get it?{" "}
-                <button type="button" onClick={resend} disabled={cooldown > 0} className="text-primary hover:underline font-medium disabled:opacity-50 disabled:no-underline">
-                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
-                </button>
-              </p>
-              <p className="text-center">
-                <button type="button" onClick={() => { setStep("password"); setCode(""); }} className="text-sm text-muted-foreground hover:underline">Back</button>
-              </p>
-            </div>
-          ) : (
           <form onSubmit={submit} className="space-y-5">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -170,7 +113,6 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          )}
 
           <div className="mt-6 text-center text-sm text-muted-foreground space-y-2">
             <p>
