@@ -21,6 +21,9 @@ const CareersPage = lazy(() => import("./pages/CareersPage"));
 const JobDetailPage = lazy(() => import("./pages/JobDetailPage"));
 const ServiceDetailPage = lazy(() => import("./pages/ServiceDetailPage"));
 const InternshipsPage = lazy(() => import("./pages/InternshipsPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
 const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 
 // Employee and intern portals
@@ -65,6 +68,11 @@ const App = () => (
               <Route path="/careers/:id" element={<JobDetailPage />} />
               <Route path="/services/:slug" element={<ServiceDetailPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/privacy-policy" element={<LegalPage kind="privacy" />} />
+              <Route path="/terms" element={<LegalPage kind="terms" />} />
+              <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/profile" element={<ProfilePage />} />
