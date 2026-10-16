@@ -12,3 +12,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+Sitemap: https://www.sdmtechsolution.com/sitemap.xml
