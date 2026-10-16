@@ -141,24 +141,26 @@ const Auth = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        // Two-step login: password first, then a 6-digit code sent to the email.
-        inFlow.current = true; // stop the auto-redirect while the code step is pending
-        const res = await requestLoginCode(email.trim(), password);
-        if (!res.ok) {
-          inFlow.current = false;
-          if (res.message.toLowerCase().includes("email not confirmed")) {
+        // Registered users sign in with email + password only (no extra email code).
+        const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) {
+          const msg = error.message.toLowerCase();
+          if (msg.includes("email not confirmed")) {
             await supabase.auth.resend({ type: "signup", email: email.trim() });
             setOtp("");
+            setCooldown(30);
             setMode("verifyEmail");
             toast({ title: "Verify your email", description: "We sent a new code to your email." });
           } else {
-            toast({ title: "Login Failed", description: res.message, variant: "destructive" });
+            toast({
+              title: "Login Failed",
+              description: msg.includes("invalid login credentials") ? "Invalid email or password. Please try again." : error.message,
+              variant: "destructive",
+            });
           }
-        } else {
-          setOtp("");
-          setCooldown(60);
-          setMode("verifyLogin");
-          toast({ title: "Check your email", description: `We sent a 6-digit login code to ${email.trim()}` });
+        } else if (data.user) {
+          toast({ title: "Welcome back!", description: "You have successfully logged in." });
+          await continueAfterSession(data.user as any);
         }
       } else {
         const p = normalizePhone(phone)!;
@@ -255,7 +257,7 @@ const Auth = () => {
     let err: string | null = null;
     if (mode === "verifyLogin") {
       const r = await sendLoginCode(email.trim());
-      if (!r.ok) err = r.message;
+      if (r.ok === false) err = r.message;
     } else {
       const { error } =
         mode === "verifyEmail"
