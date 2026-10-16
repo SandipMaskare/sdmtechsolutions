@@ -14,6 +14,7 @@ const Footer = () => {
     { name: "Services", href: "/services" },
     { name: "Internships", href: "/internships" },
     { name: "Careers", href: "/careers" },
+    { name: "Blog", href: "/blog" },
     { name: "Contact", href: "/contact" },
     { name: "Employee Login", href: "/employee/login" },
     { name: "Intern Login", href: "/intern/login" },
@@ -124,6 +125,11 @@ const Footer = () => {
           <p className="text-secondary-foreground/60 text-sm text-center md:text-left">
             © {new Date().getFullYear()} SDM Technology. All rights reserved.
           </p>
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-secondary-foreground/60">
+            <Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-primary">Terms of Use</Link>
+            <Link to="/disclaimer" className="hover:text-primary">Disclaimer</Link>
+          </div>
           <button
             onClick={scrollToTop}
             className="w-10 h-10 bg-primary/20 hover:bg-primary rounded-full flex items-center justify-center text-primary hover:text-primary-foreground transition-all duration-300"
