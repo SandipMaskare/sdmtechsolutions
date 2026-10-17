@@ -15,7 +15,7 @@ const Spinner = () => (
 
 /**
  * Only lets users with the given role in; everyone else goes to the right login or their own home.
- * Interns must complete their profile first; deactivated accounts are signed out.
+ * Interns and employees must complete their profile first; deactivated accounts are signed out.
  */
 const RequireRole = ({ role, children }: { role: AppRole; children: ReactNode }) => {
   const { user, role: myRole, loading, roleLoading, signOut } = useAuth();
@@ -28,7 +28,7 @@ const RequireRole = ({ role, children }: { role: AppRole; children: ReactNode })
     setState((s) => (s.complete ? s : { ...s, checked: false }));
     supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
       if (!alive) return;
-      setState({ checked: true, complete: role === "intern" ? isProfileComplete(data, role) : true, active: data?.is_active !== false });
+      setState({ checked: true, complete: isProfileComplete(data, role), active: data?.is_active !== false });
     });
     return () => { alive = false; };
   }, [user, myRole, role, location.pathname]);

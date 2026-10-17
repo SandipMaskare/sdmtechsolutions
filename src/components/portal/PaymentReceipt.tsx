@@ -23,6 +23,7 @@ const PaymentReceipt = ({ payment, profile, open, onClose }: { payment: any; pro
     ["Intern ID", profile?.intern_id || "—"],
     ["Domain", profile?.internship_domain || "—"],
     ["Payment for", payment.title],
+    ["Payment method", payment.method || "—"],
     ["Transaction / UTR", payment.reference || "—"],
     ["Payment submitted", fmtDate(payment.submitted_at)],
     ["Verified on", fmtDate(payment.verified_at)],

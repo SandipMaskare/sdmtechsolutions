@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle, Wallet } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle, Wallet, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,7 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
     { to: c.base, end: true, icon: LayoutDashboard, label: "Dashboard" },
     { to: `${c.base}/work`, end: false, icon: ClipboardList, label: c.workLabel },
     { to: `${c.base}/submissions`, end: false, icon: Send, label: "My Submissions" },
+    { to: `${c.base}/analytics`, end: false, icon: BarChart3, label: "My Analytics" },
     ...(kind === "intern" ? [{ to: `${c.base}/payments`, end: false, icon: Wallet, label: "Payments" }] : []),
     { to: `${c.base}/profile`, end: false, icon: UserCircle, label: "My Profile" },
   ];
