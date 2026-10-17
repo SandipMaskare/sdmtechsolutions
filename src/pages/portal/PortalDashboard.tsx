@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, ClipboardList, Send, AlertTriangle, ArrowRight } f
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ProgressPanel from "@/components/portal/ProgressPanel";
 import PortalLayout, { PortalKind, portalCopy } from "@/components/portal/PortalLayout";
 import { usePortalTasks, statusMeta } from "@/hooks/usePortalTasks";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -81,6 +82,13 @@ const PortalDashboard = ({ kind }: { kind: PortalKind }) => {
             </Card>
           ))}
         </div>
+
+        {tasks.length > 0 && (
+          <Card>
+            <CardHeader><CardTitle>My progress</CardTitle></CardHeader>
+            <CardContent><ProgressPanel tasks={tasks as any} /></CardContent>
+          </Card>
+        )}
 
         {overdue.length > 0 && (
           <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/20">
