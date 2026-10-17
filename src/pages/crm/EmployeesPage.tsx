@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Search, MoreHorizontal, UserPlus, Mail, Phone, Building2 } from "lucide-react";
+import { Plus, Search, MoreHorizontal, UserPlus, Mail, Phone, Building2, BellRing } from "lucide-react";
+import { callFunction } from "@/lib/functions";
+import { durationText, missingFields } from "@/lib/internProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +46,12 @@ interface Employee {
   position: string | null;
   is_active: boolean;
   created_at: string;
+  intern_id?: string | null;
+  internship_domain?: string | null;
+  internship_start?: string | null;
+  internship_end?: string | null;
+  college?: string | null;
+  [k: string]: any;
 }
 
 const EmployeesPage = () => {
@@ -180,11 +188,27 @@ const EmployeesPage = () => {
     fetchEmployees();
   };
 
+  const sendReminders = async () => {
+    const targets = employees.filter((e) => roleMap[e.user_id] === "intern" && e.is_active && missingFields(e, "intern").length > 0);
+    if (targets.length === 0) { toast({ title: "All active interns have completed their profile" }); return; }
+    if (!window.confirm(`Email ${targets.length} intern(s) asking them to complete their profile?`)) return;
+    const body = `Hello,\n\nPlease log in to the SDM Technology Intern Portal and complete your profile. It is compulsory.\n\nAdd the internship details from your offer letter: Intern ID, internship domain, start and end dates, mode of internship, college and phone number. We use your domain to assign your weekly tasks.\n\nOpen: https://www.sdmtechsolution.com/intern/profile\n\nRegards,\nSDM Technology`;
+    const { error } = await callFunction("send-email", {
+      to: targets.map((t) => t.email),
+      subject: "Action needed: complete your SDM Technology intern profile",
+      text: body,
+      html: `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6">${body.replace(/\n/g, "<br>").replace("https://www.sdmtechsolution.com/intern/profile", '<a href="https://www.sdmtechsolution.com/intern/profile">https://www.sdmtechsolution.com/intern/profile</a>')}</div>`,
+    });
+    toast(error ? { title: "Email not sent", description: error, variant: "destructive" } : { title: "Reminder sent", description: `${targets.length} intern(s) emailed.` });
+  };
+
   const filteredEmployees = employees.filter(
     (emp) =>
       emp.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (emp.department?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+      (emp.department?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+      (emp.intern_id?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+      (emp.internship_domain?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
   );
 
   if (loading) {
@@ -207,9 +231,10 @@ const EmployeesPage = () => {
           <div>
             <h1 className="text-3xl font-bold text-foreground font-display">Employees</h1>
             <p className="text-muted-foreground mt-1">
-              Manage your team members and their roles
+              Manage your team members and their roles. Click a name to see the full profile.
             </p>
           </div>
+          <Button variant="outline" onClick={sendReminders}><BellRing className="h-4 w-4 mr-2" />Remind interns to complete profile</Button>
         </div>
 
         {/* Search */}
@@ -238,8 +263,10 @@ const EmployeesPage = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Intern ID</TableHead>
+                  <TableHead>Domain</TableHead>
+                  <TableHead>Internship period</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead>Position</TableHead>
                   <TableHead>Login type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -248,10 +275,17 @@ const EmployeesPage = () => {
               <TableBody>
                 {filteredEmployees.map((employee) => (
                   <TableRow key={employee.id}>
-                    <TableCell className="font-medium">{employee.full_name}</TableCell>
+                    <TableCell className="font-medium">
+                      <button className="text-left hover:text-primary hover:underline" onClick={() => navigate(`/crm/people/${employee.user_id}`)}>{employee.full_name}</button>
+                      {roleMap[employee.user_id] === "intern" && missingFields(employee, "intern").length > 0 && (
+                        <Badge variant="outline" className="ml-2 text-orange-600 border-orange-400">Profile incomplete</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{employee.email}</TableCell>
+                    <TableCell>{employee.intern_id || "-"}</TableCell>
+                    <TableCell>{employee.internship_domain || "-"}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{employee.internship_start ? durationText(employee) : "-"}</TableCell>
                     <TableCell>{employee.department || "-"}</TableCell>
-                    <TableCell>{employee.position || "-"}</TableCell>
                     <TableCell>
                       <Badge variant={roleMap[employee.user_id] ? "default" : "outline"}>
                         {roleMap[employee.user_id] === "admin"
@@ -276,6 +310,12 @@ const EmployeesPage = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/crm/people/${employee.user_id}`)}>
+                            View full profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/crm/task-library?user=${employee.user_id}`)}>
+                            Assign tasks
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
                               setEditingEmployee(employee);
