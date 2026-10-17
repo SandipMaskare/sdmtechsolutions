@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import PortalLayout, { PortalKind } from "@/components/portal/PortalLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase as typedClient } from "@/integrations/supabase/client";
@@ -13,6 +14,9 @@ import { supabase as typedClient } from "@/integrations/supabase/client";
 const supabase: any = typedClient;
 import { useToast } from "@/hooks/use-toast";
 import { fmtDate } from "@/lib/internProfile";
+import { useUserRole } from "@/hooks/useUserRole";
+import PaymentReceipt from "@/components/portal/PaymentReceipt";
+import { CheckCircle2, Receipt } from "lucide-react";
 
 export const paymentMeta: Record<string, { label: string; className: string }> = {
   requested: { label: "Payment due", className: "bg-orange-500" },
@@ -30,6 +34,9 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
   const [ref, setRef] = useState<Record<string, string>>({});
   const [file, setFile] = useState<Record<string, File | null>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const { profile } = useUserRole();
+  const [receipt, setReceipt] = useState<any>(null);
+  const [sent, setSent] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -54,7 +61,7 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
     const { error } = await supabase.rpc("submit_payment_proof", { _id: p.id, _ref: r, _proof: proof });
     setBusy(null);
     if (error) return toast({ title: "Could not submit", description: error.message, variant: "destructive" });
-    toast({ title: "Submitted", description: "The admin will verify your payment." });
+    setSent(true);
     load();
   };
 
@@ -81,6 +88,12 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
               {p.instructions && <div className="rounded-lg bg-muted p-3 text-sm whitespace-pre-wrap">{p.instructions}</div>}
               {p.admin_note && <p className="text-sm"><span className="font-medium">Admin note:</span> {p.admin_note}</p>}
               {p.reference && <p className="text-sm text-muted-foreground">Your reference: {p.reference}</p>}
+              {p.status === "verified" && (
+                <div className="rounded-lg border border-green-500/50 bg-green-50 dark:bg-green-950/20 p-4 flex flex-wrap items-center justify-between gap-3">
+                  <span className="flex items-center gap-2 text-green-700 dark:text-green-400 font-medium"><CheckCircle2 className="w-5 h-5" />Payment successful — verified {fmtDate(p.verified_at)}</span>
+                  <Button size="sm" onClick={() => setReceipt(p)}><Receipt className="w-4 h-4 mr-2" />View / download receipt</Button>
+                </div>
+              )}
               {["requested", "rejected"].includes(p.status) && (
                 <div className="space-y-3 border-t pt-3">
                   <div className="space-y-1.5"><Label>Transaction / UTR number</Label><Input value={ref[p.id] || ""} onChange={(e) => setRef({ ...ref, [p.id]: e.target.value })} /></div>
@@ -92,6 +105,15 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
           </Card>
         ))}
       </div>
+      <PaymentReceipt payment={receipt} profile={profile} open={!!receipt} onClose={() => setReceipt(null)} />
+      <Dialog open={sent} onOpenChange={setSent}>
+        <DialogContent className="max-w-sm text-center">
+          <CheckCircle2 className="w-14 h-14 text-green-600 mx-auto" />
+          <p className="text-lg font-semibold">Payment details submitted</p>
+          <p className="text-sm text-muted-foreground">The admin will verify your payment. Once verified, your payment receipt appears here and can be downloaded.</p>
+          <Button onClick={() => setSent(false)}>OK</Button>
+        </DialogContent>
+      </Dialog>
     </PortalLayout>
   );
 };
