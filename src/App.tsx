@@ -32,6 +32,7 @@ const PortalDashboard = lazy(() => import("./pages/portal/PortalDashboard"));
 const PortalWork = lazy(() => import("./pages/portal/PortalWork"));
 const PortalSubmissions = lazy(() => import("./pages/portal/PortalSubmissions"));
 const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
+const PortalAnalytics = lazy(() => import("./pages/portal/PortalAnalytics"));
 const PortalPayments = lazy(() => import("./pages/portal/PortalPayments"));
 const PersonProfilePage = lazy(() => import("./pages/crm/PersonProfilePage"));
 const TaskLibraryPage = lazy(() => import("./pages/crm/TaskLibraryPage"));
@@ -88,6 +89,7 @@ const App = () => (
               <Route path="/employee/login" element={<PortalLogin kind="employee" />} />
               <Route path="/employee" element={<RequireRole role="employee"><PortalDashboard kind="employee" /></RequireRole>} />
               <Route path="/employee/work" element={<RequireRole role="employee"><PortalWork kind="employee" /></RequireRole>} />
+              <Route path="/employee/analytics" element={<RequireRole role="employee"><PortalAnalytics kind="employee" /></RequireRole>} />
               <Route path="/employee/profile" element={<RequireRole role="employee"><PortalProfile kind="employee" /></RequireRole>} />
               <Route path="/employee/submissions" element={<RequireRole role="employee"><PortalSubmissions kind="employee" /></RequireRole>} />
 
@@ -95,6 +97,7 @@ const App = () => (
               <Route path="/intern/login" element={<PortalLogin kind="intern" />} />
               <Route path="/intern" element={<RequireRole role="intern"><PortalDashboard kind="intern" /></RequireRole>} />
               <Route path="/intern/work" element={<RequireRole role="intern"><PortalWork kind="intern" /></RequireRole>} />
+              <Route path="/intern/analytics" element={<RequireRole role="intern"><PortalAnalytics kind="intern" /></RequireRole>} />
               <Route path="/intern/profile" element={<RequireRole role="intern"><PortalProfile kind="intern" /></RequireRole>} />
               <Route path="/intern/payments" element={<RequireRole role="intern"><PortalPayments kind="intern" /></RequireRole>} />
               <Route path="/intern/submissions" element={<RequireRole role="intern"><PortalSubmissions kind="intern" /></RequireRole>} />
