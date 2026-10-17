@@ -32,7 +32,7 @@ const EmailCenter = () => {
       <h2 className="text-2xl font-bold text-foreground">Email</h2>
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Send an email from sdmtechnologies.pvtltd@gmail.com</CardTitle>
+          <CardTitle className="text-lg">Send an email from your company mailbox</CardTitle>
           <CardDescription>Send to anyone straight from the website. Use Gemini to write or polish the message.</CardDescription>
         </CardHeader>
         <CardContent>
