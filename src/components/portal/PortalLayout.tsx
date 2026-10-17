@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { durationText } from "@/lib/internProfile";
 import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
 import { cn } from "@/lib/utils";
@@ -19,11 +21,14 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const c = portalCopy[kind];
+  const { profile } = useUserRole();
 
   const links = [
     { to: c.base, end: true, icon: LayoutDashboard, label: "Dashboard" },
     { to: `${c.base}/work`, end: false, icon: ClipboardList, label: c.workLabel },
     { to: `${c.base}/submissions`, end: false, icon: Send, label: "My Submissions" },
+    ...(kind === "intern" ? [{ to: `${c.base}/payments`, end: false, icon: Wallet, label: "Payments" }] : []),
+    { to: `${c.base}/profile`, end: false, icon: UserCircle, label: "My Profile" },
   ];
 
   const logout = async () => {
@@ -44,9 +49,15 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
           </Link>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
+            {kind === "intern" && profile?.internship_start && (
+              <Link to={`${c.base}/profile`} className="hidden lg:flex flex-col items-end leading-tight text-xs text-muted-foreground hover:text-foreground">
+                <span className="font-medium text-foreground">{profile.intern_id || "Intern"}{profile.internship_domain ? ` · ${profile.internship_domain}` : ""}</span>
+                <span>{durationText(profile)}</span>
+              </Link>
+            )}
             <span className="text-sm text-muted-foreground hidden md:block max-w-[200px] truncate">{user?.email}</span>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/profile"><UserCircle className="w-4 h-4 sm:mr-1" /><span className="hidden sm:inline">Profile</span></Link>
+              <Link to={`${c.base}/profile`}><UserCircle className="w-4 h-4 sm:mr-1" /><span className="hidden sm:inline">Profile</span></Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/"><Home className="w-4 h-4 sm:mr-1" /><span className="hidden sm:inline">Website</span></Link>
