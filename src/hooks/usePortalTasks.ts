@@ -11,6 +11,9 @@ export interface PortalTask {
   task_type: string;
   deadline: string | null;
   created_at: string;
+  week?: number | null;
+  domain?: string | null;
+  reference_links?: string | null;
 }
 
 export interface PortalSubmission {
