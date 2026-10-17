@@ -2,7 +2,43 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import EmailComposer from "./EmailComposer";
+
+/** Links and names that appear in the footer of every branded email. */
+const BrandSettings = () => {
+  const { toast } = useToast();
+  const [f, setF] = useState({ community_url: "", mentor_name: "Mr. Kabir Maskare", contact_email: "sdmtechnologies.pvtltd@gmail.com" });
+  useEffect(() => {
+    (supabase as any).from("website_content").select("metadata").eq("section_key", "brand_links").maybeSingle().then(({ data }: any) => {
+      if (data?.metadata) setF((x) => ({ ...x, ...data.metadata }));
+    });
+  }, []);
+  const save = async () => {
+    const { error } = await (supabase as any).from("website_content").upsert({ section_key: "brand_links", title: "Email branding", metadata: f }, { onConflict: "section_key" });
+    toast(error ? { title: "Could not save", description: error.message, variant: "destructive" } : { title: "Email branding saved" });
+  };
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Email branding</CardTitle>
+        <CardDescription>Shown in every branded email: logo and social links are built in; set the community link, mentor and contact here.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div><Label>Community link (WhatsApp / Telegram / Discord)</Label><Input value={f.community_url} onChange={(e) => setF({ ...f, community_url: e.target.value })} placeholder="https://chat.whatsapp.com/..." /></div>
+          <div><Label>Internship mentor name</Label><Input value={f.mentor_name} onChange={(e) => setF({ ...f, mentor_name: e.target.value })} /></div>
+          <div><Label>Contact email</Label><Input value={f.contact_email} onChange={(e) => setF({ ...f, contact_email: e.target.value })} /></div>
+        </div>
+        <p className="text-xs text-muted-foreground">Leave the community link empty to hide the "Join our community" block.</p>
+        <Button onClick={save}>Save branding</Button>
+      </CardContent>
+    </Card>
+  );
+};
 
 interface LogRow {
   id: string;
@@ -39,6 +75,8 @@ const EmailCenter = () => {
           <EmailComposer onSent={load} />
         </CardContent>
       </Card>
+
+      <BrandSettings />
 
       <Card>
         <CardHeader><CardTitle className="text-lg">Recently sent</CardTitle></CardHeader>

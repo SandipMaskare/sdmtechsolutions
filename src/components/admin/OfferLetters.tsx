@@ -101,9 +101,9 @@ const OfferLetters = () => {
       const text =
         `Dear ${it.name},\n\nCongratulations! Please find attached your offer letter with Schedule A (Intern ID: ${it.id}) for the ${it.role} internship at SDM Technology ` +
         `(${it.start ? it.start : "start date"} to ${it.end ? it.end : "end date"}).\n\nKindly review it and accept it within ${it.days} days.\n\n` +
-        `Best regards,\nHR Team – SDM Technology\nhttps://sdmtechsolution.com`;
+        `Best regards,\nHR Team – SDM Technology`;
       const { error } = await callFunction("send-email", {
-        to: it.email, subject, text,
+        to: it.email, subject, text, template: "intern",
         attachments: [{ filename: pdfName(it), content: pdf, contentType: "application/pdf" }],
       });
       if (error) throw new Error(error);

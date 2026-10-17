@@ -21,6 +21,12 @@ interface Props {
 }
 
 const escHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const TEMPLATES = [
+  { value: "general", label: "Branded (logo, follow-us links)" },
+  { value: "intern", label: "Branded for interns (mentor + mandatory follow)" },
+  { value: "tasks", label: "Branded for task emails (zip upload + LinkedIn share)" },
+  { value: "none", label: "Plain (no branding)" },
+];
 const TONES = ["Professional and friendly", "Formal", "Short and direct", "Warm and encouraging", "Apologetic"];
 
 const EmailComposer = ({ initialTo = "", initialSubject = "", original, onSent }: Props) => {
@@ -31,6 +37,7 @@ const EmailComposer = ({ initialTo = "", initialSubject = "", original, onSent }
   const [tone, setTone] = useState(TONES[0]);
   const [instructions, setInstructions] = useState("");
   const [busy, setBusy] = useState<"draft" | "improve" | "send" | null>(null);
+  const [template, setTemplate] = useState("general");
 
   const ai = async (mode: "draft" | "improve") => {
     if (mode === "improve" && !body.trim()) {
@@ -71,6 +78,7 @@ const EmailComposer = ({ initialTo = "", initialSubject = "", original, onSent }
       to: list,
       subject: subject.trim(),
       text: body,
+      template,
       html: `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6">${escHtml(body).replace(/\n/g, "<br>")}</div>`,
     });
     setBusy(null);
@@ -132,6 +140,12 @@ const EmailComposer = ({ initialTo = "", initialSubject = "", original, onSent }
       <div>
         <Label htmlFor="mail-body">Message</Label>
         <Textarea id="mail-body" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="mail-template">Email design</Label>
+        <select id="mail-template" value={template} onChange={(e) => setTemplate(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+          {TEMPLATES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
       </div>
       <Button onClick={send} disabled={busy !== null}>
         {busy === "send" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
