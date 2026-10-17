@@ -12,12 +12,13 @@ import PortalLayout, { PortalKind, portalCopy } from "@/components/portal/Portal
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { DOMAIN_OPTIONS, MODES, missingFields, durationText } from "@/lib/internProfile";
+import { DOMAIN_OPTIONS, MODES, missingFields, durationText, COMPANY_LINKEDIN } from "@/lib/internProfile";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const empty = {
   full_name: "", phone: "", college: "", city: "", intern_id: "", internship_domain: "", internship_mode: "Virtual (Online)",
   internship_start: "", internship_end: "", offer_role: "", offer_date: "", linkedin_url: "", github_url: "", skills: "", bio: "",
-  department: "", position: "",
+  department: "", position: "", employee_id: "", follows_company: false, joined_community: false,
 };
 
 const PortalProfile = ({ kind }: { kind: PortalKind }) => {
@@ -45,7 +46,7 @@ const PortalProfile = ({ kind }: { kind: PortalKind }) => {
     });
   }, [user]);
 
-  const set = (k: string, v: string) => setF((p: any) => ({ ...p, [k]: v }));
+  const set = (k: string, v: any) => setF((p: any) => ({ ...p, [k]: v }));
   const missing = missingFields(f, kind);
   const isIntern = kind === "intern";
 
@@ -62,6 +63,7 @@ const PortalProfile = ({ kind }: { kind: PortalKind }) => {
     setSaving(true);
     const payload: any = {};
     Object.keys(empty).forEach((k) => {
+      if (typeof (empty as any)[k] === "boolean") { payload[k] = !!f[k]; return; }
       const v = (f[k] ?? "").toString().trim();
       payload[k] = v === "" ? null : v;
     });
@@ -154,6 +156,7 @@ const PortalProfile = ({ kind }: { kind: PortalKind }) => {
               {field("phone", "Phone number", { inputMode: "tel" }, true)}
               {isIntern && field("college", "College / University", {}, true)}
               {field("city", "City")}
+              {!isIntern && field("employee_id", "Employee ID", { placeholder: "Your SDM employee ID" }, true)}
               {!isIntern && field("department", "Department")}
               {!isIntern && field("position", "Position", {}, true)}
             </div>
@@ -194,11 +197,27 @@ const PortalProfile = ({ kind }: { kind: PortalKind }) => {
           <CardHeader><CardTitle>About you</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
-              {field("linkedin_url", "LinkedIn URL", { placeholder: "https://linkedin.com/in/..." })}
+              {field("linkedin_url", "LinkedIn profile link", { placeholder: "https://linkedin.com/in/..." }, true)}
               {field("github_url", "GitHub / Portfolio URL", { placeholder: "https://github.com/..." })}
             </div>
             <div className="space-y-1.5"><Label>Skills</Label><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} placeholder="Python, React, Figma..." /></div>
             <div className="space-y-1.5"><Label>Short bio</Label><Textarea rows={3} value={f.bio} onChange={(e) => set("bio", e.target.value)} /></div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Stay connected with SDM Technology</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">Following our company page is mandatory. When you post your projects on LinkedIn, tag <b>SDM Technology</b>.</p>
+            <Button type="button" variant="outline" asChild><a href={COMPANY_LINKEDIN} target="_blank" rel="noopener noreferrer">Open SDM Technology on LinkedIn</a></Button>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <Checkbox checked={!!f.follows_company} onCheckedChange={(v) => set("follows_company", !!v)} className="mt-0.5" />
+              <span>I follow the SDM Technology LinkedIn company page <span className="text-destructive">*</span></span>
+            </label>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <Checkbox checked={!!f.joined_community} onCheckedChange={(v) => set("joined_community", !!v)} className="mt-0.5" />
+              <span>I have joined the SDM Technology community for career opportunities</span>
+            </label>
           </CardContent>
         </Card>
 

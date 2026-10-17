@@ -8,7 +8,7 @@ import PortalLayout, { PortalKind, portalCopy } from "@/components/portal/Portal
 import { usePortalTasks, statusMeta } from "@/hooks/usePortalTasks";
 import { useUserRole } from "@/hooks/useUserRole";
 import { durationText, currentWeek, missingFields } from "@/lib/internProfile";
-import { findDomain, WEEKS } from "@/data/internshipPlan";
+import { findDomain, planWeeks } from "@/data/internshipPlan";
 
 const PortalDashboard = ({ kind }: { kind: PortalKind }) => {
   const c = portalCopy[kind];
@@ -58,7 +58,7 @@ const PortalDashboard = ({ kind }: { kind: PortalKind }) => {
               <div><p className="text-muted-foreground">Intern ID</p><p className="font-semibold">{profile.intern_id || "—"}</p></div>
               <div><p className="text-muted-foreground">Domain</p><p className="font-semibold">{findDomain(profile.internship_domain)?.label || profile.internship_domain || "—"}</p></div>
               <div className="col-span-2"><p className="text-muted-foreground">Duration</p><p className="font-semibold">{durationText(profile)}</p></div>
-              {(() => { const w = currentWeek(profile); return w && w > 0 ? <div><p className="text-muted-foreground">Now</p><p className="font-semibold">Week {Math.min(w, WEEKS)} of {WEEKS}</p></div> : null; })()}
+              {(() => { const w = currentWeek(profile); return w && w > 0 ? <div><p className="text-muted-foreground">Now</p><p className="font-semibold">Week {Math.min(w, planWeeks(profile.internship_start, profile.internship_end))} of {planWeeks(profile.internship_start, profile.internship_end)}</p></div> : null; })()}
             </CardContent>
           </Card>
         )}
@@ -86,7 +86,7 @@ const PortalDashboard = ({ kind }: { kind: PortalKind }) => {
         {tasks.length > 0 && (
           <Card>
             <CardHeader><CardTitle>My progress</CardTitle></CardHeader>
-            <CardContent><ProgressPanel tasks={tasks as any} /></CardContent>
+            <CardContent><ProgressPanel tasks={tasks as any} onlyAssigned totalWeeks={0} /></CardContent>
           </Card>
         )}
 

@@ -34,6 +34,8 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
   const [ref, setRef] = useState<Record<string, string>>({});
   const [file, setFile] = useState<Record<string, File | null>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [methods, setMethods] = useState<any[]>([]);
+  const [method, setMethod] = useState<Record<string, string>>({});
   const { profile } = useUserRole();
   const [receipt, setReceipt] = useState<any>(null);
   const [sent, setSent] = useState(false);
@@ -42,12 +44,15 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
     if (!user) return;
     const { data } = await supabase.from("payments").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setRows(data || []);
+    const m = await supabase.from("payment_methods").select("*").eq("is_active", true).order("display_order").order("created_at");
+    setMethods(m.data || []);
     setLoading(false);
   }, [user]);
   useEffect(() => { load(); }, [load]);
 
   const submit = async (p: any) => {
     const r = (ref[p.id] || "").trim();
+    if (methods.length && !method[p.id]) return toast({ title: "Choose the payment method you used", variant: "destructive" });
     if (r.length < 6) return toast({ title: "Enter the transaction / UTR number", variant: "destructive" });
     setBusy(p.id);
     let proof: string | null = null;
@@ -58,7 +63,7 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
       if (up.error) { setBusy(null); return toast({ title: "Upload failed", description: up.error.message, variant: "destructive" }); }
       proof = path;
     }
-    const { error } = await supabase.rpc("submit_payment_proof", { _id: p.id, _ref: r, _proof: proof });
+    const { error } = await supabase.rpc("submit_payment_proof", { _id: p.id, _ref: r, _proof: proof, _method: method[p.id] || null });
     setBusy(null);
     if (error) return toast({ title: "Could not submit", description: error.message, variant: "destructive" });
     setSent(true);
@@ -94,8 +99,30 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
                   <Button size="sm" onClick={() => setReceipt(p)}><Receipt className="w-4 h-4 mr-2" />View / download receipt</Button>
                 </div>
               )}
+              {["requested", "rejected"].includes(p.status) && methods.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Pay using any of these methods</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {methods.map((m) => (
+                      <div key={m.id} className="rounded-lg border p-3 text-sm space-y-1">
+                        <div className="font-semibold">{m.label}</div>
+                        <div className="whitespace-pre-wrap text-muted-foreground">{m.details}</div>
+                        {m.qr_url && <img src={m.qr_url} alt={`${m.label} QR`} className="h-32 w-32 object-contain rounded border bg-white" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {["requested", "rejected"].includes(p.status) && (
                 <div className="space-y-3 border-t pt-3">
+                  {methods.length > 0 && (
+                    <div className="space-y-1.5"><Label>Method you paid with</Label>
+                      <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={method[p.id] || ""} onChange={(e) => setMethod({ ...method, [p.id]: e.target.value })}>
+                        <option value="">Select…</option>
+                        {methods.map((m) => <option key={m.id} value={m.label}>{m.label}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <div className="space-y-1.5"><Label>Transaction / UTR number</Label><Input value={ref[p.id] || ""} onChange={(e) => setRef({ ...ref, [p.id]: e.target.value })} /></div>
                   <div className="space-y-1.5"><Label>Payment screenshot (optional)</Label><Input type="file" accept="image/*,application/pdf" onChange={(e) => setFile({ ...file, [p.id]: e.target.files?.[0] || null })} /></div>
                   <Button onClick={() => submit(p)} disabled={busy === p.id}><Upload className="w-4 h-4 mr-2" />{busy === p.id ? "Submitting..." : "Submit payment details"}</Button>

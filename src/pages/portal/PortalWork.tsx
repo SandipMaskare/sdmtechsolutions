@@ -12,6 +12,8 @@ import { usePortalTasks, statusMeta, priorityMeta, PortalTask } from "@/hooks/us
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { parseRefs } from "@/data/internshipResources";
+import { BookOpen } from "lucide-react";
 
 const MAX_MB = 10;
 const FILTERS = [
@@ -59,6 +61,10 @@ const PortalWork = ({ kind }: { kind: PortalKind }) => {
   };
 
   const pickFile = (f: File | null) => {
+    if (f && !/\.zip$/i.test(f.name)) {
+      toast({ title: "Please upload a .zip file", description: "Put all your work in one zip file, or use the link field instead.", variant: "destructive" });
+      return;
+    }
     if (f && f.size > MAX_MB * 1024 * 1024) {
       toast({ title: "File too large", description: `Maximum ${MAX_MB} MB.`, variant: "destructive" });
       return;
@@ -149,6 +155,16 @@ const PortalWork = ({ kind }: { kind: PortalKind }) => {
                       <Badge className={statusMeta[t.status]?.className}>{statusMeta[t.status]?.label || t.status}</Badge>
                     </div>
                     {t.description && <p className="text-muted-foreground whitespace-pre-line">{t.description}</p>}
+                    {parseRefs((t as any).reference_links).length > 0 && (
+                      <div className="rounded-lg border p-3 text-sm">
+                        <p className="flex items-center gap-2 font-medium text-foreground mb-1"><BookOpen className="w-4 h-4" /> Reference material</p>
+                        <ul className="list-disc pl-5 space-y-0.5">
+                          {parseRefs((t as any).reference_links).map((r, i) => (
+                            <li key={i}><a href={r.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{r.label}</a></li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                       <span className={`flex items-center gap-1.5 ${late ? "text-red-600 font-medium" : ""}`}>
                         <Calendar className="w-4 h-4" />
@@ -197,8 +213,8 @@ const PortalWork = ({ kind }: { kind: PortalKind }) => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>File (max {MAX_MB} MB)</Label>
-              <Input type="file" onChange={(e) => pickFile(e.target.files?.[0] || null)} />
+              <Label>Upload your work as one .zip file (max {MAX_MB} MB)</Label>
+              <Input type="file" accept=".zip,application/zip,application/x-zip-compressed" onChange={(e) => pickFile(e.target.files?.[0] || null)} />
               {file && <p className="text-xs text-muted-foreground">Selected: {file.name}</p>}
             </div>
             <div className="space-y-2">
