@@ -10,7 +10,9 @@ import {
   ChevronLeft, 
   ChevronRight,
   LogOut,
-  Building2
+  Building2,
+  Library,
+  Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,8 @@ const CRMSidebar = ({ userRole }: CRMSidebarProps) => {
     { to: "/crm/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/crm/employees", icon: Users, label: "Employees" },
     { to: "/crm/tasks", icon: ClipboardList, label: "Tasks" },
+    { to: "/crm/task-library", icon: Library, label: "Task Library" },
+    { to: "/crm/payments", icon: Wallet, label: "Payments" },
     { to: "/crm/submissions", icon: CheckSquare, label: "Submissions" },
     { to: "/crm/analytics", icon: BarChart3, label: "Analytics" },
     { to: "/crm/settings", icon: Settings, label: "Settings" },
