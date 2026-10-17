@@ -23,7 +23,7 @@ const TaskLibraryPage = () => {
       const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["intern", "employee"]);
       const ids = (roles || []).map((r) => r.user_id);
       if (!ids.length) return;
-      const { data: ps } = await supabase.from("profiles").select("user_id, full_name, internship_domain, internship_start").in("user_id", ids);
+      const { data: ps } = await supabase.from("profiles").select("user_id, full_name, email, internship_domain, internship_start").in("user_id", ids);
       const rm: Record<string, string> = {};
       (roles || []).forEach((r) => (rm[r.user_id] = r.role));
       setPeople((ps || []).map((p: any) => ({ ...p, role: rm[p.user_id] })));

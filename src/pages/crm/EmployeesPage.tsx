@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Search, MoreHorizontal, UserPlus, Mail, Phone, Building2, BellRing } from "lucide-react";
 import { callFunction } from "@/lib/functions";
+import { progressOf } from "@/components/portal/ProgressPanel";
+import { Progress } from "@/components/ui/progress";
 import { durationText, missingFields } from "@/lib/internProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,7 @@ const EmployeesPage = () => {
   const { toast } = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roleMap, setRoleMap] = useState<Record<string, string>>({});
+  const [taskMap, setTaskMap] = useState<Record<string, any[]>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
@@ -107,6 +110,10 @@ const EmployeesPage = () => {
       if (!map[r.user_id] || rank(r.role) > rank(map[r.user_id])) map[r.user_id] = r.role;
     });
     setRoleMap(map);
+    const { data: allTasks } = await supabase.from("tasks").select("assigned_to,status,week");
+    const tm: Record<string, any[]> = {};
+    (allTasks || []).forEach((t: any) => { if (t.assigned_to) (tm[t.assigned_to] ||= []).push(t); });
+    setTaskMap(tm);
   };
 
   const handleToggleActive = async (employee: Employee) => {
@@ -266,6 +273,7 @@ const EmployeesPage = () => {
                   <TableHead>Intern ID</TableHead>
                   <TableHead>Domain</TableHead>
                   <TableHead>Internship period</TableHead>
+                  <TableHead>Progress</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Login type</TableHead>
                   <TableHead>Status</TableHead>
@@ -285,6 +293,9 @@ const EmployeesPage = () => {
                     <TableCell>{employee.intern_id || "-"}</TableCell>
                     <TableCell>{employee.internship_domain || "-"}</TableCell>
                     <TableCell className="text-xs whitespace-nowrap">{employee.internship_start ? durationText(employee) : "-"}</TableCell>
+                    <TableCell className="min-w-[110px]">
+                      {(() => { const o = progressOf(taskMap[employee.user_id] || []); return o.total ? (<div className="space-y-1"><Progress value={o.pct} className="h-2" /><span className="text-xs text-muted-foreground">{o.approved}/{o.total} done</span></div>) : "-"; })()}
+                    </TableCell>
                     <TableCell>{employee.department || "-"}</TableCell>
                     <TableCell>
                       <Badge variant={roleMap[employee.user_id] ? "default" : "outline"}>

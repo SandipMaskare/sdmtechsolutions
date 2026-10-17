@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CRMLayout from "@/components/crm/CRMLayout";
 import PaymentAdmin from "@/components/crm/PaymentAdmin";
+import ProgressPanel from "@/components/portal/ProgressPanel";
 import PlanAssigner from "@/components/crm/PlanAssigner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
@@ -159,6 +160,13 @@ const PersonProfilePage = () => {
           </CardContent>
         </Card>
 
+        {tasks.length > 0 && (
+          <Card>
+            <CardHeader><CardTitle className="text-base">Progress</CardTitle></CardHeader>
+            <CardContent><ProgressPanel tasks={tasks} /></CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Tasks ({done}/{tasks.length} approved · {subs.length} submissions)</CardTitle>
@@ -231,7 +239,7 @@ const PersonProfilePage = () => {
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
           <DialogHeader><DialogTitle>Assign tasks to {p.full_name}</DialogTitle></DialogHeader>
-          <PlanAssigner people={[{ user_id: p.user_id, full_name: p.full_name, role: personRole || undefined, internship_domain: p.internship_domain, internship_start: p.internship_start }]} onDone={() => { setAssignOpen(false); load(); }} />
+          <PlanAssigner people={[{ email: p.email, user_id: p.user_id, full_name: p.full_name, role: personRole || undefined, internship_domain: p.internship_domain, internship_start: p.internship_start }]} onDone={() => { setAssignOpen(false); load(); }} />
         </DialogContent>
       </Dialog>
     </CRMLayout>
