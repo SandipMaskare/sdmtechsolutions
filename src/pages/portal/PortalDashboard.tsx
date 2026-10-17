@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import PortalLayout, { PortalKind, portalCopy } from "@/components/portal/PortalLayout";
 import { usePortalTasks, statusMeta } from "@/hooks/usePortalTasks";
 import { useUserRole } from "@/hooks/useUserRole";
+import { durationText, currentWeek, missingFields } from "@/lib/internProfile";
+import { findDomain, WEEKS } from "@/data/internshipPlan";
 
 const PortalDashboard = ({ kind }: { kind: PortalKind }) => {
   const c = portalCopy[kind];
@@ -39,6 +41,26 @@ const PortalDashboard = ({ kind }: { kind: PortalKind }) => {
             Here are your {c.work.toLowerCase()} from SDM Technology. Open one to read it, do the work, and submit it here.
           </p>
         </div>
+
+        {missingFields(profile, kind).length > 0 && (
+          <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/20">
+            <CardContent className="pt-6 flex items-center justify-between gap-3 text-orange-700 dark:text-orange-300">
+              <span className="flex items-center gap-3"><AlertTriangle className="w-5 h-5 shrink-0" />Please complete your profile{kind === "intern" ? " with the internship details from your offer letter" : ""}.</span>
+              <Button size="sm" asChild><Link to={`${c.base}/profile`}>Update profile</Link></Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {kind === "intern" && profile?.internship_start && (
+          <Card>
+            <CardContent className="pt-6 grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              <div><p className="text-muted-foreground">Intern ID</p><p className="font-semibold">{profile.intern_id || "—"}</p></div>
+              <div><p className="text-muted-foreground">Domain</p><p className="font-semibold">{findDomain(profile.internship_domain)?.label || profile.internship_domain || "—"}</p></div>
+              <div className="col-span-2"><p className="text-muted-foreground">Duration</p><p className="font-semibold">{durationText(profile)}</p></div>
+              {(() => { const w = currentWeek(profile); return w && w > 0 ? <div><p className="text-muted-foreground">Now</p><p className="font-semibold">Week {Math.min(w, WEEKS)} of {WEEKS}</p></div> : null; })()}
+            </CardContent>
+          </Card>
+        )}
 
         {error && (
           <Card className="border-destructive">
