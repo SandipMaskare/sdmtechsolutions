@@ -8,22 +8,28 @@ export const INTERN_REQUIRED: { key: string; label: string }[] = [
   { key: "internship_domain", label: "Internship domain" },
   { key: "internship_start", label: "Internship start date" },
   { key: "internship_end", label: "Internship end date" },
+  { key: "linkedin_url", label: "LinkedIn profile link" },
+  { key: "follows_company", label: "Confirm you follow the SDM Technology LinkedIn page" },
 ];
 
 export const EMPLOYEE_REQUIRED: { key: string; label: string }[] = [
   { key: "full_name", label: "Full name" },
   { key: "phone", label: "Phone number" },
   { key: "position", label: "Position" },
+  { key: "employee_id", label: "Employee ID" },
+  { key: "linkedin_url", label: "LinkedIn profile link" },
+  { key: "follows_company", label: "Confirm you follow the SDM Technology LinkedIn page" },
 ];
 
 export const missingFields = (profile: any, role?: string | null) => {
   if (!profile) return [];
   const list = role === "intern" ? INTERN_REQUIRED : role === "employee" ? EMPLOYEE_REQUIRED : [];
-  return list.filter((f) => !String(profile[f.key] ?? "").trim());
+  return list.filter((f) => (f.key === "follows_company" ? profile[f.key] !== true : !String(profile[f.key] ?? "").trim()));
 };
 
 export const isProfileComplete = (profile: any, role?: string | null) => missingFields(profile, role).length === 0;
 
+export const COMPANY_LINKEDIN = "https://www.linkedin.com/company/sdm-technology-1/";
 export const MODES = ["Virtual (Online)", "On-site", "Hybrid"];
 export const DOMAIN_OPTIONS = domainLabels;
 
