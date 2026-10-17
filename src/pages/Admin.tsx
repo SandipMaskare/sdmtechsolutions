@@ -13,6 +13,7 @@ import {
   Mail,
   MessagesSquare,
   FileSignature,
+  Inbox,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +27,7 @@ import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import EmailCenter from "@/components/admin/EmailCenter";
 import ChatInbox from "@/components/admin/ChatInbox";
 import OfferLetters from "@/components/admin/OfferLetters";
+import MailInbox from "@/components/admin/MailInbox";
 import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
 
@@ -108,7 +110,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-9 h-auto">
+          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-10 h-auto">
             <TabsTrigger value="jobs">
               <Briefcase className="w-4 h-4" /> Jobs
             </TabsTrigger>
@@ -123,6 +125,9 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="messages">
               <MessageSquare className="w-4 h-4" /> Messages
+            </TabsTrigger>
+            <TabsTrigger value="inbox">
+              <Inbox className="w-4 h-4" /> Inbox
             </TabsTrigger>
             <TabsTrigger value="email">
               <Mail className="w-4 h-4" /> Email
@@ -152,6 +157,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="messages">
             <ContactSubmissions />
+          </TabsContent>
+          <TabsContent value="inbox">
+            <MailInbox />
           </TabsContent>
           <TabsContent value="email">
             <EmailCenter />
