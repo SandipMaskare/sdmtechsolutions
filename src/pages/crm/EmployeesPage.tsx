@@ -196,15 +196,16 @@ const EmployeesPage = () => {
   };
 
   const sendReminders = async () => {
-    const targets = employees.filter((e) => roleMap[e.user_id] === "intern" && e.is_active && missingFields(e, "intern").length > 0);
+    const targets = employees.filter((e) => ["intern", "employee"].includes(roleMap[e.user_id]) && e.is_active && missingFields(e, roleMap[e.user_id]).length > 0);
     if (targets.length === 0) { toast({ title: "All active interns have completed their profile" }); return; }
     if (!window.confirm(`Email ${targets.length} intern(s) asking them to complete their profile?`)) return;
-    const body = `Hello,\n\nPlease log in to the SDM Technology Intern Portal and complete your profile. It is compulsory.\n\nAdd the internship details from your offer letter: Intern ID, internship domain, start and end dates, mode of internship, college and phone number. We use your domain to assign your weekly tasks.\n\nOpen: https://www.sdmtechsolution.com/intern/profile\n\nRegards,\nSDM Technology`;
+    const body = `Hello,\n\nPlease log in to the SDM Technology portal and complete your profile. It is compulsory.\n\nInterns: add the details from your offer letter (Intern ID, internship domain, start and end dates, mode, college). Employees: add your Employee ID and position. Everyone: add your LinkedIn profile link and confirm that you follow the SDM Technology LinkedIn page.\n\nWe use your domain to assign your weekly tasks.\n\nLog in: https://www.sdmtechsolution.com/auth`;
     const { error } = await callFunction("send-email", {
       to: targets.map((t) => t.email),
       subject: "Action needed: complete your SDM Technology intern profile",
       text: body,
-      html: `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6">${body.replace(/\n/g, "<br>").replace("https://www.sdmtechsolution.com/intern/profile", '<a href="https://www.sdmtechsolution.com/intern/profile">https://www.sdmtechsolution.com/intern/profile</a>')}</div>`,
+      template: "intern",
+      html: `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6">${body.replace(/\n/g, "<br>").replace("https://www.sdmtechsolution.com/auth", '<a href="https://www.sdmtechsolution.com/auth">https://www.sdmtechsolution.com/auth</a>')}</div>`,
     });
     toast(error ? { title: "Email not sent", description: error, variant: "destructive" } : { title: "Reminder sent", description: `${targets.length} intern(s) emailed.` });
   };
@@ -241,7 +242,7 @@ const EmployeesPage = () => {
               Manage your team members and their roles. Click a name to see the full profile.
             </p>
           </div>
-          <Button variant="outline" onClick={sendReminders}><BellRing className="h-4 w-4 mr-2" />Remind interns to complete profile</Button>
+          <Button variant="outline" onClick={sendReminders}><BellRing className="h-4 w-4 mr-2" />Remind staff to complete profile</Button>
         </div>
 
         {/* Search */}
@@ -285,7 +286,7 @@ const EmployeesPage = () => {
                   <TableRow key={employee.id}>
                     <TableCell className="font-medium">
                       <button className="text-left hover:text-primary hover:underline" onClick={() => navigate(`/crm/people/${employee.user_id}`)}>{employee.full_name}</button>
-                      {roleMap[employee.user_id] === "intern" && missingFields(employee, "intern").length > 0 && (
+                      {["intern", "employee"].includes(roleMap[employee.user_id]) && missingFields(employee, roleMap[employee.user_id]).length > 0 && (
                         <Badge variant="outline" className="ml-2 text-orange-600 border-orange-400">Profile incomplete</Badge>
                       )}
                     </TableCell>

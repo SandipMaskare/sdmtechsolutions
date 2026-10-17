@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import TeamCharts from "@/components/analytics/TeamCharts";
 import CRMLayout from "@/components/crm/CRMLayout";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,6 +122,8 @@ const AnalyticsPage = () => {
             Track team performance and task completion rates
           </p>
         </div>
+
+        <TeamCharts />
 
         {/* Overall Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

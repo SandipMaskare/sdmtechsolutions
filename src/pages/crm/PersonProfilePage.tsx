@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil, Wand2, Mail, Phone, GraduationCap, MapPin, Linkedin,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,15 +14,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import CRMLayout from "@/components/crm/CRMLayout";
 import PaymentAdmin from "@/components/crm/PaymentAdmin";
 import ProgressPanel from "@/components/portal/ProgressPanel";
+import PerformanceCharts from "@/components/analytics/PerformanceCharts";
+import TaskManager from "@/components/crm/TaskManager";
 import PlanAssigner from "@/components/crm/PlanAssigner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { statusMeta } from "@/hooks/usePortalTasks";
 import { DOMAIN_OPTIONS, MODES, durationText, fmtDate, currentWeek, missingFields } from "@/lib/internProfile";
+import { planWeeks } from "@/data/internshipPlan";
 import { pickRole } from "@/lib/roles";
 
-const EDIT_FIELDS = ["full_name", "phone", "college", "city", "department", "position", "intern_id", "internship_domain", "internship_mode", "internship_start", "internship_end", "offer_role", "offer_date", "linkedin_url", "github_url", "skills", "bio"] as const;
+const EDIT_FIELDS = ["full_name", "phone", "college", "city", "department", "position", "intern_id", "internship_domain", "internship_mode", "internship_start", "internship_end", "offer_role", "offer_date", "linkedin_url", "github_url", "skills", "bio", "employee_id"] as const;
 
 const PersonProfilePage = () => {
   const { userId } = useParams();
@@ -60,6 +64,8 @@ const PersonProfilePage = () => {
   const openEdit = () => {
     const x: any = {};
     EDIT_FIELDS.forEach((k) => (x[k] = p?.[k] ?? ""));
+    x.follows_company = !!p?.follows_company;
+    x.joined_community = !!p?.joined_community;
     setF(x);
     setEdit(true);
   };
@@ -77,6 +83,8 @@ const PersonProfilePage = () => {
     const payload: any = {};
     EDIT_FIELDS.forEach((k) => { const v = String(f[k] ?? "").trim(); payload[k] = v === "" ? null : v; });
     payload.full_name = String(f.full_name || "").trim() || p.full_name;
+    payload.follows_company = !!f.follows_company;
+    payload.joined_community = !!f.joined_community;
     const { error } = await supabase.from("profiles").update(payload).eq("user_id", userId!);
     if (error) return toast({ title: "Could not save", description: error.message.includes("profiles_intern_id_uq") ? "That Intern ID is already used." : error.message, variant: "destructive" });
     toast({ title: "Profile updated" });
@@ -118,7 +126,7 @@ const PersonProfilePage = () => {
                 {p.internship_domain && <Badge variant="secondary">{p.internship_domain}</Badge>}
                 <Badge variant={p.is_active ? "default" : "secondary"}>{p.is_active ? "Active" : "Inactive"}</Badge>
               </div>
-              {isIntern && <p className="text-sm text-muted-foreground mt-1">Internship: {durationText(p)}{week && week > 0 ? ` · Week ${Math.min(week, 8)} of 8` : ""}</p>}
+              {isIntern && <p className="text-sm text-muted-foreground mt-1">Internship: {durationText(p)}{week && week > 0 ? ` · Week ${Math.min(week, planWeeks(p.internship_start, p.internship_end))} of ${planWeeks(p.internship_start, p.internship_end)}` : ""}</p>}
             </div>
           </div>
           <div className="flex gap-2">
@@ -156,6 +164,9 @@ const PersonProfilePage = () => {
             {row("LinkedIn", p.linkedin_url && <a className="text-primary underline inline-flex items-center gap-1" href={p.linkedin_url} target="_blank" rel="noreferrer"><Linkedin className="w-3 h-3" />open</a>)}
             {row("GitHub / Portfolio", p.github_url && <a className="text-primary underline inline-flex items-center gap-1" href={p.github_url} target="_blank" rel="noreferrer"><Github className="w-3 h-3" />open</a>)}
             {row("Skills", p.skills)}
+            {row("Employee ID", p.employee_id)}
+            {row("Follows company page", p.follows_company ? "Yes" : "No")}
+            {row("Joined community", p.joined_community ? "Yes" : "No")}
             <div className="sm:col-span-2 lg:col-span-3">{row("Bio", p.bio)}</div>
           </CardContent>
         </Card>
@@ -163,7 +174,7 @@ const PersonProfilePage = () => {
         {tasks.length > 0 && (
           <Card>
             <CardHeader><CardTitle className="text-base">Progress</CardTitle></CardHeader>
-            <CardContent><ProgressPanel tasks={tasks} /></CardContent>
+            <CardContent><ProgressPanel tasks={tasks} totalWeeks={planWeeks(p.internship_start, p.internship_end)} /></CardContent>
           </Card>
         )}
 
@@ -172,22 +183,16 @@ const PersonProfilePage = () => {
             <CardTitle className="text-base">Tasks ({done}/{tasks.length} approved · {subs.length} submissions)</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Task</TableHead><TableHead>Week</TableHead><TableHead>Deadline</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {tasks.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-medium">{t.title}</TableCell>
-                    <TableCell>{t.week || "—"}</TableCell>
-                    <TableCell>{fmtDate(t.deadline)}</TableCell>
-                    <TableCell><Badge className={statusMeta[t.status]?.className}>{statusMeta[t.status]?.label || t.status}</Badge></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {tasks.length === 0 && <p className="text-sm text-center text-muted-foreground py-6">No tasks assigned yet.</p>}
+            <TaskManager person={{ user_id: p.user_id, full_name: p.full_name, email: p.email, role: personRole, internship_domain: p.internship_domain }} tasks={tasks} onChange={load} />
           </CardContent>
         </Card>
+
+        {tasks.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold">Performance analytics</h2>
+            <PerformanceCharts tasks={tasks} subs={subs} />
+          </div>
+        )}
 
         {isIntern && (
           <Card>
@@ -230,6 +235,11 @@ const PersonProfilePage = () => {
             {inp("linkedin_url", "LinkedIn URL")}
             {inp("github_url", "GitHub / Portfolio URL")}
             {inp("skills", "Skills")}
+            {inp("employee_id", "Employee ID")}
+          </div>
+          <div className="flex flex-wrap gap-6 pt-1">
+            <label className="flex items-center gap-2 text-sm cursor-pointer"><Checkbox checked={!!f.follows_company} onCheckedChange={(v) => setF((x: any) => ({ ...x, follows_company: !!v }))} />Follows company LinkedIn page</label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer"><Checkbox checked={!!f.joined_community} onCheckedChange={(v) => setF((x: any) => ({ ...x, joined_community: !!v }))} />Joined community</label>
           </div>
           <div className="space-y-1.5"><Label>Bio</Label><Textarea rows={3} value={f.bio ?? ""} onChange={(e) => set("bio", e.target.value)} /></div>
           <Button onClick={save} className="w-full">Save changes</Button>
@@ -239,7 +249,7 @@ const PersonProfilePage = () => {
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
           <DialogHeader><DialogTitle>Assign tasks to {p.full_name}</DialogTitle></DialogHeader>
-          <PlanAssigner people={[{ email: p.email, user_id: p.user_id, full_name: p.full_name, role: personRole || undefined, internship_domain: p.internship_domain, internship_start: p.internship_start }]} onDone={() => { setAssignOpen(false); load(); }} />
+          <PlanAssigner people={[{ email: p.email, user_id: p.user_id, full_name: p.full_name, role: personRole || undefined, internship_domain: p.internship_domain, internship_start: p.internship_start, internship_end: p.internship_end }]} onDone={() => { setAssignOpen(false); load(); }} />
         </DialogContent>
       </Dialog>
     </CRMLayout>

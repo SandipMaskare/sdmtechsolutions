@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CRMLayout from "@/components/crm/CRMLayout";
 import PaymentAdmin from "@/components/crm/PaymentAdmin";
+import PaymentMethodsAdmin from "@/components/crm/PaymentMethodsAdmin";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const PaymentsAdminPage = () => {
@@ -21,6 +22,7 @@ const PaymentsAdminPage = () => {
           <h1 className="text-3xl font-bold font-display">Payments</h1>
           <p className="text-muted-foreground mt-1">Only admins can assign payments. Interns pay, enter the transaction number, and you verify it here.</p>
         </div>
+        <Card><CardHeader><CardTitle>Payment methods</CardTitle></CardHeader><CardContent><PaymentMethodsAdmin /></CardContent></Card>
         <Card><CardHeader><CardTitle>All payments</CardTitle></CardHeader><CardContent><PaymentAdmin /></CardContent></Card>
       </div>
     </CRMLayout>
