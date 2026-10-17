@@ -124,7 +124,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
         <TableHeader>
           <TableRow>
             {!userId && <TableHead>Intern</TableHead>}
-            <TableHead>Payment</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Reference</TableHead><TableHead className="text-right">Actions</TableHead>
+            <TableHead>Payment</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Method / Reference</TableHead><TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -135,6 +135,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
               <TableCell>₹{Number(p.amount).toLocaleString("en-IN")}</TableCell>
               <TableCell><Badge className={paymentMeta[p.status]?.className}>{paymentMeta[p.status]?.label}</Badge></TableCell>
               <TableCell className="text-sm">
+                {p.method && <div className="text-xs text-muted-foreground">{p.method}</div>}
                 {p.reference || "—"}
                 {p.proof_url && <button className="ml-2 inline-flex items-center text-primary underline" onClick={() => proof(p.proof_url)}><ExternalLink className="w-3 h-3 mr-1" />proof</button>}
               </TableCell>

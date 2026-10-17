@@ -7,9 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { notifyUser, PORTAL_URL } from "@/lib/notify";
-import { DOMAINS, WEEKS, findDomain, splitTask } from "@/data/internshipPlan";
+import { DOMAINS, WEEKS, findDomain, splitTask, planWeeks } from "@/data/internshipPlan";
+import { RESOURCES, refsToText } from "@/data/internshipResources";
 
-export interface Assignee { email?: string | null; user_id: string; full_name: string; role?: string; internship_domain?: string | null; internship_start?: string | null }
+export interface Assignee { email?: string | null; user_id: string; full_name: string; role?: string; internship_domain?: string | null; internship_start?: string | null; internship_end?: string | null }
 
 const dueFor = (week: number, start?: string | null) => {
   const today = new Date();
@@ -35,6 +36,7 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
 
   const domain = useMemo(() => DOMAINS.find((d) => d.key === domainKey)!, [domainKey]);
   const weeks = week === "all" ? Array.from({ length: WEEKS }, (_, i) => i + 1) : [Number(week)];
+  const refs = RESOURCES[domainKey] || [];
 
   const assign = async () => {
     if (!user || people.length === 0) return toast({ title: "Select at least one person", variant: "destructive" });
@@ -44,7 +46,9 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
     const have = new Set((existing || []).map((t: any) => `${t.assigned_to}|${t.title}`));
     const rows: any[] = [];
     for (const p of people) {
+      const cap = planWeeks(p.internship_start, p.internship_end);
       for (const w of weeks) {
+        if (week === "all" && w > cap) continue; // a 1-month internship does not get 8 weeks of work
         domain.weeks[w - 1].forEach((raw, i) => {
           if (week !== "all" && !picked[i]) return;
           const { title, description } = splitTask(raw);
@@ -52,7 +56,7 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
           if (have.has(`${p.user_id}|${full}`)) return;
           rows.push({
             title: full, description, assigned_to: p.user_id, assigned_by: user.id, priority: "medium", status: "pending",
-            deadline: dueFor(w, p.internship_start).toISOString(), task_type: p.role === "employee" ? "task" : "project", week: w, domain: domain.label,
+            deadline: dueFor(w, p.internship_start).toISOString(), task_type: p.role === "employee" ? "task" : "project", week: w, domain: domain.label, reference_links: refsToText(refs),
           });
         });
       }
@@ -69,8 +73,9 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
         const wk = [...new Set(mine.map((r) => r.week))].join(", ");
         const { error: mErr } = await notifyUser({
           email: p.email, name: p.full_name,
+          template: "tasks" as const, refs,
           subject: `New ${p.role === "employee" ? "tasks" : "projects"} assigned: Week ${wk}`,
-          lines: [`${mine.length} new ${p.role === "employee" ? "task(s)" : "project(s)"} have been assigned to you:`, ...mine.map((r) => `• ${r.title} (due ${new Date(r.deadline).toLocaleDateString("en-IN")})`), "Please log in, complete the work and submit it on the portal."],
+          lines: [`${mine.length} new ${p.role === "employee" ? "task(s)" : "project(s)"} have been assigned to you:`, ...mine.map((r) => `• ${r.title} (due ${new Date(r.deadline).toLocaleDateString("en-IN")})`), "Please log in, complete the work and upload it as a single .zip file on the portal."],
           link: { label: "Open my portal", url: p.role === "employee" ? PORTAL_URL.replace("/intern", "/employee") : PORTAL_URL },
         });
         if (!mErr) mailed++;
@@ -94,7 +99,7 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {Array.from({ length: WEEKS }, (_, i) => <SelectItem key={i} value={String(i + 1)}>Week {i + 1}</SelectItem>)}
-              <SelectItem value="all">All {WEEKS} weeks (24 tasks)</SelectItem>
+              <SelectItem value="all">All weeks of the internship (up to {WEEKS})</SelectItem>
             </SelectContent>
           </Select>
         </div>
