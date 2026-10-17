@@ -6,9 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { notifyUser, PORTAL_URL } from "@/lib/notify";
 import { DOMAINS, WEEKS, findDomain, splitTask } from "@/data/internshipPlan";
 
-export interface Assignee { user_id: string; full_name: string; role?: string; internship_domain?: string | null; internship_start?: string | null }
+export interface Assignee { email?: string | null; user_id: string; full_name: string; role?: string; internship_domain?: string | null; internship_start?: string | null }
 
 const dueFor = (week: number, start?: string | null) => {
   const today = new Date();
@@ -27,6 +28,7 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
   const [week, setWeek] = useState("1"); // "1".."8" or "all"
   const [picked, setPicked] = useState<boolean[]>([true, true, true]);
   const [busy, setBusy] = useState(false);
+  const [email, setEmail] = useState(true);
 
   useEffect(() => { if (guess) setDomainKey(guess); }, [guess]);
   useEffect(() => setPicked([true, true, true]), [week, domainKey]);
@@ -59,7 +61,22 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
     const { error } = await supabase.from("tasks").insert(rows);
     setBusy(false);
     if (error) return toast({ title: "Could not assign", description: error.message, variant: "destructive" });
-    toast({ title: `${rows.length} task${rows.length > 1 ? "s" : ""} assigned`, description: `to ${people.length} ${people.length > 1 ? "people" : "person"}` });
+    let mailed = 0;
+    if (email) {
+      for (const p of people) {
+        const mine = rows.filter((r) => r.assigned_to === p.user_id);
+        if (!p.email || mine.length === 0) continue;
+        const wk = [...new Set(mine.map((r) => r.week))].join(", ");
+        const { error: mErr } = await notifyUser({
+          email: p.email, name: p.full_name,
+          subject: `New ${p.role === "employee" ? "tasks" : "projects"} assigned: Week ${wk}`,
+          lines: [`${mine.length} new ${p.role === "employee" ? "task(s)" : "project(s)"} have been assigned to you:`, ...mine.map((r) => `• ${r.title} (due ${new Date(r.deadline).toLocaleDateString("en-IN")})`), "Please log in, complete the work and submit it on the portal."],
+          link: { label: "Open my portal", url: p.role === "employee" ? PORTAL_URL.replace("/intern", "/employee") : PORTAL_URL },
+        });
+        if (!mErr) mailed++;
+      }
+    }
+    toast({ title: `${rows.length} task${rows.length > 1 ? "s" : ""} assigned`, description: `to ${people.length} ${people.length > 1 ? "people" : "person"}${email ? ` · ${mailed} email(s) sent` : ""}` });
     onDone?.();
   };
 
@@ -100,6 +117,7 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
         ))}
       </div>
 
+      <label className="flex items-center gap-2 text-sm cursor-pointer"><Checkbox checked={email} onCheckedChange={(v) => setEmail(!!v)} />Email them about these tasks</label>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">Deadline = end of that week from the internship start date. Already-assigned tasks are skipped.</p>
         <Button onClick={assign} disabled={busy || people.length === 0}>{busy ? "Assigning..." : `Assign to ${people.length || "…"} ${people.length === 1 ? "person" : "people"}`}</Button>

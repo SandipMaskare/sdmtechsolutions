@@ -15,6 +15,7 @@ const supabase: any = typedClient;
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { paymentMeta } from "@/pages/portal/PortalPayments";
+import { notifyUser, PORTAL_URL } from "@/lib/notify";
 import { fmtDate } from "@/lib/internProfile";
 
 /** Admin-only: assign payments to interns, then verify / reject / waive them. */
@@ -36,7 +37,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
     const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "intern");
     const ids = (roles || []).map((r) => r.user_id);
     if (ids.length) {
-      const { data: ps } = await supabase.from("profiles").select("user_id, full_name, intern_id").in("user_id", ids);
+      const { data: ps } = await supabase.from("profiles").select("user_id, full_name, email, intern_id").in("user_id", ids);
       setPeople(ps || []);
       const m: Record<string, string> = {};
       (ps || []).forEach((p: any) => (m[p.user_id] = p.full_name + (p.intern_id ? ` (${p.intern_id})` : "")));
@@ -54,7 +55,15 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
       user_id: form.user_id, title: form.title.trim(), amount, instructions: form.instructions.trim() || null, created_by: user?.id,
     });
     if (error) return toast({ title: "Could not create", description: error.message, variant: "destructive" });
-    toast({ title: "Payment assigned" });
+    const who = people.find((x) => x.user_id === form.user_id);
+    if (who?.email) {
+      await notifyUser({
+        email: who.email, name: who.full_name, subject: `Payment due: ${form.title.trim()}`,
+        lines: [`A payment has been assigned to you: ${form.title.trim()} — ₹${amount.toLocaleString("en-IN")}.`, form.instructions.trim() || "Open the Payments tab for details.", "After paying, enter your transaction (UTR) number on the portal. You will get a receipt once it is verified."],
+        link: { label: "Open Payments", url: `${PORTAL_URL}/payments` },
+      });
+    }
+    toast({ title: "Payment assigned", description: who?.email ? "Intern notified by email." : undefined });
     setOpen(false);
     setForm({ ...form, amount: "", instructions: "" });
     load();
@@ -65,6 +74,17 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
     if (status === "verified") { patch.verified_at = new Date().toISOString(); patch.verified_by = user?.id; }
     const { error } = await supabase.from("payments").update(patch).eq("id", p.id);
     if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    const who = people.find((x) => x.user_id === p.user_id);
+    if (who?.email && (status === "verified" || status === "rejected")) {
+      await notifyUser({
+        email: who.email, name: who.full_name,
+        subject: status === "verified" ? `Payment verified: ${p.title}` : `Payment needs attention: ${p.title}`,
+        lines: status === "verified"
+          ? [`Your payment of ₹${Number(p.amount).toLocaleString("en-IN")} for "${p.title}" is verified. Your receipt is ready to download.`]
+          : [`Your payment details for "${p.title}" could not be verified.`, note ? `Reason: ${note}` : "Please check the details and submit again."],
+        link: { label: status === "verified" ? "Download receipt" : "Open Payments", url: `${PORTAL_URL}/payments` },
+      });
+    }
     load();
   };
 
