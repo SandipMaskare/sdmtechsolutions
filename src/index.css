@@ -162,3 +162,37 @@
     @apply scale-x-100 origin-bottom-left;
   }
 }
+
+/* Installed-app (PWA / Play Store) feel */
+.app-mode {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+.app-mode body {
+  -webkit-touch-callout: none;
+}
+.app-mode button,
+.app-mode a {
+  touch-action: manipulation;
+}
+
+/* Public pages inside the app: compact spacing, room for the bottom tab bar */
+.app-mode main.pt-20,
+.app-mode main.pt-24 {
+  padding-top: calc(3.5rem + env(safe-area-inset-top));
+}
+.app-mode #root > div > main,
+.app-mode #root main {
+  padding-bottom: calc(5.5rem + var(--sdm-ad-h, 0px));
+}
+.app-mode main section.py-16,
+.app-mode main section.py-20,
+.app-mode main section.py-24 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+.app-mode h1.text-4xl,
+.app-mode h1.text-5xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}

@@ -6,6 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Suspense, lazy } from "react";
 import RequireRole from "@/components/portal/RequireRole";
+import AppEntry from "@/components/portal/AppEntry";
+import AppTabBar from "@/components/app/AppTabBar";
+import AdBanner from "@/components/app/AdBanner";
+const AppHome = lazy(() => import("./pages/AppHome"));
+import { isAppMode } from "@/lib/appMode";
 
 const ChatWidget = lazy(() => import("@/components/ChatWidget"));
 
@@ -66,7 +71,8 @@ const App = () => (
           <Suspense fallback={<div style={{padding: "20px"}}>Loading...</div>}>
 
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={isAppMode() ? <AppHome /> : <Index />} />
+              <Route path="/enter" element={<AppEntry />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/internships" element={<InternshipsPage />} />
@@ -119,7 +125,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
 
-            <ChatWidget />
+            {!isAppMode() && <ChatWidget />}
+            {isAppMode() && <AppTabBar />}
+            {isAppMode() && <AdBanner />}
           </Suspense>
 
         </BrowserRouter>
