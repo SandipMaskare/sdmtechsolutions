@@ -8,6 +8,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { homePath } from "@/lib/roles";
 import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
+import AppTopBar from "@/components/app/AppTopBar";
+import { isAppMode } from "@/lib/appMode";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +70,8 @@ const Header = () => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  if (isAppMode()) return <AppTopBar />;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">

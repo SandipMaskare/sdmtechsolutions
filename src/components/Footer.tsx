@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, ArrowUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import sdmLogo from "@/assets/sdm-logo.webp";
+import { isAppMode } from "@/lib/appMode";
 
 const Footer = () => {
+  if (isAppMode()) return null;
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
