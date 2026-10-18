@@ -3,7 +3,7 @@
   "short_name": "SDM Tech",
   "description": "SDM Technology – intern and employee portal, tasks, payments and company updates.",
   "id": "/",
-  "start_url": "/intern/login?source=pwa",
+  "start_url": "/enter?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -17,7 +17,7 @@
     { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "My Tasks", "url": "/intern", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "My Tasks", "url": "/enter", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
     { "name": "Employee login", "url": "/employee/login", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
     { "name": "Payments", "url": "/intern/payments", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
   ]
