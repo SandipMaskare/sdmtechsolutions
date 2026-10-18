@@ -9,6 +9,7 @@ import { durationText } from "@/lib/internProfile";
 import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
 import { cn } from "@/lib/utils";
+import { isAppMode } from "@/lib/appMode";
 
 export type PortalKind = "employee" | "intern";
 
@@ -36,6 +37,62 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
     await signOut();
     navigate(`${c.base}/login`);
   };
+
+  if (isAppMode()) {
+    const tabs = [
+      { to: c.base, end: true, icon: LayoutDashboard, label: "Home" },
+      { to: `${c.base}/work`, end: false, icon: ClipboardList, label: kind === "intern" ? "Projects" : "Tasks" },
+      { to: `${c.base}/submissions`, end: false, icon: Send, label: "Submits" },
+      ...(kind === "intern" ? [{ to: `${c.base}/payments`, end: false, icon: Wallet, label: "Payments" }] : [{ to: `${c.base}/analytics`, end: false, icon: BarChart3, label: "Stats" }]),
+      { to: `${c.base}/profile`, end: false, icon: UserCircle, label: "Profile" },
+    ];
+    return (
+      <div className="min-h-screen bg-muted/30 flex flex-col">
+        <header className="sticky top-0 z-40 bg-[#0f766e] text-white" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+          <div className="flex items-center justify-between px-4 h-14">
+            <Link to={c.base} className="flex items-center gap-2.5 min-w-0">
+              <span className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shrink-0">
+                <img src={sdmLogo} alt="SDM" className="h-6 w-6 object-contain" width={24} height={24} />
+              </span>
+              <span className="font-display font-semibold truncate">{c.title}</span>
+            </Link>
+            <div className="flex items-center gap-1">
+              {kind === "intern" && (
+                <Link to={`${c.base}/analytics`} aria-label="My analytics" className="h-10 w-10 flex items-center justify-center rounded-full active:bg-white/20">
+                  <BarChart3 className="w-5 h-5" />
+                </Link>
+              )}
+              <button onClick={logout} aria-label="Log out" className="h-10 w-10 flex items-center justify-center rounded-full active:bg-white/20">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 px-4 pt-4 pb-28">{children}</main>
+        <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)`, paddingBottom: "env(safe-area-inset-bottom)" }}>
+          {tabs.map((t) => (
+            <NavLink
+              key={t.to}
+              to={t.to}
+              end={t.end}
+              className={({ isActive }) =>
+                cn("flex flex-col items-center justify-center gap-0.5 pt-2 pb-1.5 text-[11px] font-medium transition-colors active:bg-accent", isActive ? "text-primary" : "text-muted-foreground")
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span className={cn("h-7 w-12 rounded-full flex items-center justify-center transition-colors", isActive && "bg-accent")}>
+                    <t.icon className="w-5 h-5" />
+                  </span>
+                  {t.label}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">
