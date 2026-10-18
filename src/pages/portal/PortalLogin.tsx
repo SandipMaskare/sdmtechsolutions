@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { homePath, pickRole } from "@/lib/roles";
 import sdmLogo from "@/assets/sdm-logo.webp";
+import { isAppMode } from "@/lib/appMode";
 
 type Kind = "employee" | "intern";
 
@@ -36,6 +37,7 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const appMode = isAppMode();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,14 +83,18 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <PageNav floating />
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4" style={appMode ? { paddingTop: "calc(env(safe-area-inset-top) + 1rem)", paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" } : undefined}>
+      {!appMode && <PageNav floating />}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
         <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
           <div className="text-center mb-8">
-            <Link to="/" className="inline-block mb-5">
-              <img src={sdmLogo} alt="SDM Technology" className="h-14 mx-auto" width={56} height={56} />
-            </Link>
+            {appMode ? (
+              <img src={sdmLogo} alt="SDM Technology" className="h-14 mx-auto mb-5" width={56} height={56} />
+            ) : (
+              <Link to="/" className="inline-block mb-5">
+                <img src={sdmLogo} alt="SDM Technology" className="h-14 mx-auto" width={56} height={56} />
+              </Link>
+            )}
             <div className="w-12 h-12 rounded-xl bg-accent mx-auto flex items-center justify-center mb-3">
               <Icon className="w-6 h-6 text-primary" />
             </div>
