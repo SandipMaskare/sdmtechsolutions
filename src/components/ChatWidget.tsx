@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { callFunction } from "@/lib/functions";
+import { isAppMode } from "@/lib/appMode";
 
 interface Msg {
   id: string;
@@ -16,7 +17,7 @@ interface Msg {
 const KEY = "sdm_chat_session";
 const readSession = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
 const saveSession = (id: string) => { try { localStorage.setItem(KEY, id); } catch { /* ignore */ } };
-const HIDDEN_PREFIXES = ["/admin", "/crm", "/employee", "/intern", "/auth"];
+const HIDDEN_PREFIXES = ["/admin", "/app/admin", "/crm", "/auth", "/intern/login", "/employee/login", "/enter"];
 
 const ChatWidget = () => {
   const { pathname } = useLocation();
@@ -101,6 +102,7 @@ const ChatWidget = () => {
         <div
           role="dialog"
           aria-label="Chat support"
+          style={isAppMode() ? { bottom: "calc(9rem + var(--sdm-ad-h, 0px))" } : undefined}
           className="fixed bottom-24 right-4 z-50 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
         >
           <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
@@ -151,6 +153,7 @@ const ChatWidget = () => {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close chat" : "Open chat support"}
+        style={isAppMode() ? { bottom: "calc(5.25rem + var(--sdm-ad-h, 0px))" } : undefined}
         className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
