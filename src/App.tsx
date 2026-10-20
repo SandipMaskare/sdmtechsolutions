@@ -8,6 +8,17 @@ import { Suspense, lazy } from "react";
 import RequireRole from "@/components/portal/RequireRole";
 import AppEntry from "@/components/portal/AppEntry";
 import AppTabBar from "@/components/app/AppTabBar";
+import AdminTabBar from "@/components/app/AdminTabBar";
+const AppServices = lazy(() => import("./pages/app/AppServices"));
+const AppServiceDetail = lazy(() => import("./pages/app/AppServiceDetail"));
+const AppInternships = lazy(() => import("./pages/app/AppInternships"));
+const AppCareers = lazy(() => import("./pages/app/AppCareers"));
+const AppJobDetail = lazy(() => import("./pages/app/AppJobDetail"));
+const AppBlog = lazy(() => import("./pages/app/AppBlog"));
+const AppBlogPost = lazy(() => import("./pages/app/AppBlogPost"));
+const AppAbout = lazy(() => import("./pages/app/AppAbout"));
+const AppContact = lazy(() => import("./pages/app/AppContact"));
+const AppAdminHub = lazy(() => import("./pages/app/AppAdminHub"));
 import AdBanner from "@/components/app/AdBanner";
 const AppHome = lazy(() => import("./pages/AppHome"));
 import { isAppMode } from "@/lib/appMode";
@@ -73,15 +84,16 @@ const App = () => (
             <Routes>
               <Route path="/" element={isAppMode() ? <AppHome /> : <Index />} />
               <Route path="/enter" element={<AppEntry />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/internships" element={<InternshipsPage />} />
-              <Route path="/careers" element={<CareersPage />} />
-              <Route path="/careers/:id" element={<JobDetailPage />} />
-              <Route path="/services/:slug" element={<ServiceDetailPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/app/admin" element={<AppAdminHub />} />
+              <Route path="/about" element={isAppMode() ? <AppAbout /> : <AboutPage />} />
+              <Route path="/services" element={isAppMode() ? <AppServices /> : <ServicesPage />} />
+              <Route path="/internships" element={isAppMode() ? <AppInternships /> : <InternshipsPage />} />
+              <Route path="/careers" element={isAppMode() ? <AppCareers /> : <CareersPage />} />
+              <Route path="/careers/:id" element={isAppMode() ? <AppJobDetail /> : <JobDetailPage />} />
+              <Route path="/services/:slug" element={isAppMode() ? <AppServiceDetail /> : <ServiceDetailPage />} />
+              <Route path="/contact" element={isAppMode() ? <AppContact /> : <ContactPage />} />
+              <Route path="/blog" element={isAppMode() ? <AppBlog /> : <BlogPage />} />
+              <Route path="/blog/:slug" element={isAppMode() ? <AppBlogPost /> : <BlogPostPage />} />
               <Route path="/privacy-policy" element={<LegalPage kind="privacy" />} />
               <Route path="/terms" element={<LegalPage kind="terms" />} />
               <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
@@ -125,8 +137,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
 
-            {!isAppMode() && <ChatWidget />}
+            <ChatWidget />
             {isAppMode() && <AppTabBar />}
+            {isAppMode() && <AdminTabBar />}
             {isAppMode() && <AdBanner />}
           </Suspense>
 
