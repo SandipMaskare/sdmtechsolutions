@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import PageNav from "@/components/PageNav";
 import CRMSidebar from "./CRMSidebar";
 import { AppRole, homePath } from "@/lib/roles";
+import AppTopBar from "@/components/app/AppTopBar";
+import { isAppMode } from "@/lib/appMode";
 
 interface CRMLayoutProps {
   children: ReactNode;
@@ -18,6 +20,17 @@ const CRMLayout = ({ children, userRole }: CRMLayoutProps) => {
   }, [userRole, navigate]);
 
   if (userRole !== "admin") return null;
+
+  if (isAppMode()) {
+    return (
+      <div className="min-h-screen bg-[#f4f7f8] w-full">
+        <AppTopBar />
+        <main className="px-3" style={{ paddingTop: "calc(3.5rem + env(safe-area-inset-top) + 0.75rem)", paddingBottom: "6rem" }}>
+          {children}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background w-full">
