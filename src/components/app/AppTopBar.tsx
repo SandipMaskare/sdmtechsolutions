@@ -4,6 +4,19 @@ import { useAuth } from "@/hooks/useAuth";
 import sdmLogo from "@/assets/sdm-logo.webp";
 
 const titles: [string, string][] = [
+  ["/app/admin", "Admin"],
+  ["/crm/dashboard", "Dashboard"],
+  ["/crm/employees", "People"],
+  ["/crm/people/", "Profile"],
+  ["/crm/tasks", "Tasks"],
+  ["/crm/submissions", "Submissions"],
+  ["/crm/payments", "Payments"],
+  ["/crm/analytics", "Analytics"],
+  ["/crm/task-library", "Task library"],
+  ["/crm/performance", "Performance"],
+  ["/crm/settings", "Settings"],
+  ["/crm", "Admin"],
+  ["/admin", "Admin panel"],
   ["/services/", "Service"],
   ["/services", "Services"],
   ["/internships", "Internships"],
@@ -26,8 +39,8 @@ const AppTopBar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isHome = pathname === "/";
-  const title = isHome ? "SDM Technology" : titles.find(([p]) => pathname.startsWith(p))?.[1] ?? "SDM Technology";
+  const isHome = pathname === "/" || pathname === "/app/admin";
+  const title = pathname === "/" ? "SDM Technology" : pathname === "/app/admin" ? "Admin" : titles.find(([p]) => pathname.startsWith(p))?.[1] ?? "SDM Technology";
 
   const back = () => {
     if (typeof window.history.state?.idx === "number" && window.history.state.idx > 0) navigate(-1);

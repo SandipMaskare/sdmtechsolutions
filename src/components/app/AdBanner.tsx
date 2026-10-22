@@ -7,6 +7,7 @@ import { hideBanner, showBanner } from "@/lib/admob";
 const AdBanner = () => {
   const { pathname } = useLocation();
   useEffect(() => {
+    try { console.warn("[SDM-Ads] route", pathname); } catch { /* ignore */ }
     const allowed = AD_ROUTES.some((p) => (p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/")));
     if (allowed) void showBanner();
     else void hideBanner();

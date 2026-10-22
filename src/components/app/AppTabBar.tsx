@@ -3,7 +3,7 @@ import { Home, Briefcase, GraduationCap, Layers, UserCircle } from "lucide-react
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
-const HIDE_ON = ["/intern", "/employee", "/crm", "/admin"];
+const HIDE_ON = ["/intern", "/employee", "/crm", "/admin", "/app/admin"];
 
 /** Bottom tab bar for the public part of the installed app. Portals have their own. */
 const AppTabBar = () => {
