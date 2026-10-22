@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle, Wallet, BarChart3 } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Send, LogOut, Home, UserCircle, Wallet, BarChart3, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,6 +62,9 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
                   <BarChart3 className="w-5 h-5" />
                 </Link>
               )}
+              <Link to="/" aria-label="Explore SDM Technology" className="h-10 w-10 flex items-center justify-center rounded-full active:bg-white/20">
+                <Compass className="w-5 h-5" />
+              </Link>
               <button onClick={logout} aria-label="Log out" className="h-10 w-10 flex items-center justify-center rounded-full active:bg-white/20">
                 <LogOut className="w-5 h-5" />
               </button>

@@ -15,7 +15,7 @@ const AppEntry = () => {
     );
   }
   if (!user || !role) return <Navigate to="/" replace />;
-  return <Navigate to={homePath(role)} replace />;
+  return <Navigate to={role === "admin" ? "/app/admin" : homePath(role)} replace />;
 };
 
 export default AppEntry;
