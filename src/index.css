@@ -196,3 +196,7 @@
   font-size: 1.875rem;
   line-height: 2.25rem;
 }
+
+/* Admin / CRM pages inside the app: tables scroll sideways instead of overflowing */
+.app-mode main table { display: block; max-width: 100%; overflow-x: auto; }
+.app-mode main { overflow-x: hidden; }
