@@ -30,6 +30,8 @@ import OfferLetters from "@/components/admin/OfferLetters";
 import MailInbox from "@/components/admin/MailInbox";
 import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
+import AppTopBar from "@/components/app/AppTopBar";
+import { isAppMode } from "@/lib/appMode";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -81,7 +83,8 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border sticky top-0 z-50">
+      {isAppMode() && <AppTopBar />}
+      <header className={isAppMode() ? "hidden" : "bg-card border-b border-border sticky top-0 z-50"}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <PageNav />
@@ -108,8 +111,8 @@ const Admin = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="jobs" className="space-y-6">
+      <main className="container mx-auto px-4 py-8" style={isAppMode() ? { paddingTop: "calc(3.5rem + env(safe-area-inset-top) + 1rem)", paddingBottom: "6rem" } : undefined}>
+        <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") || "jobs"} className="space-y-6">
           <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-10 h-auto">
             <TabsTrigger value="jobs">
               <Briefcase className="w-4 h-4" /> Jobs
