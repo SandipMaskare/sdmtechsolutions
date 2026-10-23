@@ -6,6 +6,11 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { callFunction } from "@/lib/functions";
 import { isAppMode } from "@/lib/appMode";
+import { faqAnswer, QUICK } from "@/data/chatFaq";
+
+const linkify = (t: string) =>
+  t.split(/(\s\/[a-z-]+|^\/[a-z-]+)/).map((part, i) =>
+    /^\s?\/[a-z-]+$/.test(part) ? <a key={i} href={part.trim()} className="underline font-medium">{part}</a> : part);
 
 interface Msg {
   id: string;
@@ -77,10 +82,19 @@ const ChatWidget = () => {
 
   if (!enabled || HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const msg = text.trim();
+  const send = async (e: React.FormEvent | null, preset?: string) => {
+    e?.preventDefault();
+    const msg = (preset ?? text).trim();
     if (!msg || sending) return;
+    const local = faqAnswer(msg);
+    if (local) {
+      const now = Date.now();
+      setMessages((prev) => [...prev,
+        { id: "lv" + now, sender: "visitor", body: msg, created_at: new Date(now).toISOString() },
+        { id: "lb" + now, sender: "bot", body: local, created_at: new Date(now + 1).toISOString() }]);
+      setText("");
+      return;
+    }
     setSending(true);
     setError(null);
     const { data, error: err } = await callFunction<{ session_id: string; messages: Msg[] }>("chat-support", {
@@ -134,15 +148,22 @@ const ChatWidget = () => {
                   }
                 >
                   {m.sender === "admin" && <span className="mb-0.5 block text-xs font-semibold text-primary">SDM Team</span>}
-                  {m.body}
+                  {linkify(m.body)}
                 </div>
               </div>
             ))}
+            {messages.length === 0 && (
+              <div className="flex flex-wrap gap-2">
+                {QUICK.map((q) => (
+                  <button key={q} type="button" onClick={() => send(null, q)} className="rounded-full border border-primary/40 bg-card px-3 py-1.5 text-xs text-primary hover:bg-primary/10">{q}</button>
+                ))}
+              </div>
+            )}
             <div ref={endRef} />
           </div>
 
           {error && <p className="bg-destructive/10 px-4 py-2 text-xs text-destructive">{error}</p>}
-          <form onSubmit={send} className="flex gap-2 border-t border-border bg-background p-3">
+          <form onSubmit={(e) => send(e)} className="flex gap-2 border-t border-border bg-background p-3">
             <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type your message…" maxLength={1000} aria-label="Message" />
             <Button type="submit" size="icon" disabled={sending || !text.trim()} aria-label="Send">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
