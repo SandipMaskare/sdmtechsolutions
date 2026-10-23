@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 // Razorpay hosted payment button. Loads Razorpay's official script into a form, exactly like the embed code.
 export const RAZORPAY_BUTTON_ID = "pl_Tr44Lp1XeUFd4z";
+export const RAZORPAY_LINK = "https://razorpay.me/@sdmtechnology";
 
 const RazorpayButton = ({ buttonId = RAZORPAY_BUTTON_ID }: { buttonId?: string }) => {
   const box = useRef<HTMLDivElement>(null);
@@ -18,7 +19,14 @@ const RazorpayButton = ({ buttonId = RAZORPAY_BUTTON_ID }: { buttonId?: string }
     el.appendChild(form);
     return () => { el.innerHTML = ""; };
   }, [buttonId]);
-  return <div ref={box} className="min-h-[48px]" />;
+  return (
+    <div className="space-y-2">
+      <a href={RAZORPAY_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:opacity-90">
+        Pay now on Razorpay
+      </a>
+      <div ref={box} className="min-h-[8px]" />
+    </div>
+  );
 };
 
 export default RazorpayButton;
