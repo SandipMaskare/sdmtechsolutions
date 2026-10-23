@@ -21,8 +21,10 @@ const toDateInput = (iso?: string | null) => (iso ? new Date(iso).toISOString().
 const blank = { title: "", description: "", deadline: "", priority: "medium", status: "pending", week: "", reference_links: "" };
 
 /** Admin: change deadlines, edit, add custom tasks and delete tasks for one person. */
-const TaskManager = ({ person, tasks, onChange }: {
+const TaskManager = ({ person, tasks, onChange, totalWeeks, internshipEnd }: {
   person: { user_id: string; full_name: string; email?: string; role?: string | null; internship_domain?: string | null };
+  totalWeeks?: number | null;
+  internshipEnd?: string | null;
   tasks: any[];
   onChange: () => void;
 }) => {
@@ -47,6 +49,10 @@ const TaskManager = ({ person, tasks, onChange }: {
   const save = async () => {
     if (!f.title.trim()) return toast({ title: "Enter a task title", variant: "destructive" });
     const deadline = f.deadline ? new Date(`${f.deadline}T18:00:00`).toISOString() : null;
+    if (person.role === "intern") {
+      if (totalWeeks && f.week && Number(f.week) > totalWeeks) return toast({ title: `This internship is only ${totalWeeks} week(s) long`, description: `Choose week 1 to ${totalWeeks}.`, variant: "destructive" });
+      if (internshipEnd && f.deadline && f.deadline > internshipEnd.slice(0, 10)) return toast({ title: "Deadline is after the internship ends", description: `The internship ends on ${fmtDate(internshipEnd)}. Pick an earlier deadline.`, variant: "destructive" });
+    }
     const row: any = {
       title: f.title.trim(), description: f.description.trim() || null, deadline, priority: f.priority, status: f.status,
       week: f.week ? Number(f.week) : null, reference_links: f.reference_links.trim() || null,
@@ -115,7 +121,7 @@ const TaskManager = ({ person, tasks, onChange }: {
             <div className="space-y-1.5"><Label>Description / instructions</Label><Textarea rows={4} value={f.description} onChange={(e) => set("description", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label>Deadline</Label><Input type="date" value={f.deadline} onChange={(e) => set("deadline", e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Week (optional)</Label><Input type="number" min="1" max="12" value={f.week} onChange={(e) => set("week", e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Week (optional{totalWeeks && person.role === "intern" ? `, 1 to ${totalWeeks}` : ""})</Label><Input type="number" min="1" max={totalWeeks && person.role === "intern" ? totalWeeks : 12} value={f.week} onChange={(e) => set("week", e.target.value)} /></div>
               <div className="space-y-1.5"><Label>Priority</Label>
                 <Select value={f.priority} onValueChange={(v) => set("priority", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>

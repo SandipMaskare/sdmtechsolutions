@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { paymentMeta } from "@/pages/portal/PortalPayments";
 import { notifyUser, PORTAL_URL } from "@/lib/notify";
 import { fmtDate } from "@/lib/internProfile";
+import { RAZORPAY_LINK } from "@/components/portal/RazorpayButton";
 
 /** Admin-only: assign payments to interns, then verify / reject / waive them. */
 const PaymentAdmin = ({ userId }: { userId?: string }) => {
@@ -59,7 +60,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
     if (who?.email) {
       await notifyUser({
         email: who.email, name: who.full_name, subject: `Payment due: ${form.title.trim()}`,
-        lines: [`A payment has been assigned to you: ${form.title.trim()} — ₹${amount.toLocaleString("en-IN")}.`, form.instructions.trim() || "Open the Payments tab for details.", "After paying, enter your transaction (UTR) number on the portal. You will get a receipt once it is verified."],
+        lines: [`A payment has been assigned to you: ${form.title.trim()} — ₹${amount.toLocaleString("en-IN")}.`, form.instructions.trim() || "Open the Payments tab for details.", `Pay online: ${RAZORPAY_LINK}`, "After paying, enter your transaction (UTR) or Razorpay payment ID on the portal. You will get a receipt once it is verified."],
         link: { label: "Open Payments", url: `${PORTAL_URL}/payments` },
       });
     }
@@ -86,6 +87,12 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
       });
     }
     load();
+  };
+
+  const copyMessage = async (p: any) => {
+    const who = names[p.user_id]?.split(" (")[0] || "Intern";
+    const msg = `Hello ${who},\n\nA payment of Rs. ${Number(p.amount).toLocaleString("en-IN")} for "${p.title}" has been assigned to you at SDM Technology.\n\nPay here: ${RAZORPAY_LINK}\n(You can also pay by UPI/QR from the Payments page in your intern portal.)\n\nAfter paying, log in to the portal > Payments and enter your Razorpay payment ID or UTR number. You will get a receipt once it is verified.\n\nThank you,\nSDM Technology`;
+    try { await navigator.clipboard.writeText(msg); toast({ title: "Payment message copied", description: "Paste it in WhatsApp or email." }); } catch { window.prompt("Copy this message:", msg); }
   };
 
   const reject = (p: any) => {
@@ -144,6 +151,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
                   <Button size="sm" variant="outline" className="mr-1" onClick={() => setStatus(p, "verified")}><Check className="w-4 h-4 mr-1" />Verify</Button>
                   <Button size="sm" variant="outline" className="mr-1" onClick={() => reject(p)}><X className="w-4 h-4 mr-1" />Reject</Button>
                 </>}
+                {["requested", "rejected"].includes(p.status) && <Button size="sm" variant="outline" className="mr-1" onClick={() => copyMessage(p)}>Copy message</Button>}
                 {["requested", "rejected"].includes(p.status) && <Button size="sm" variant="ghost" className="mr-1" title="Waive" onClick={() => setStatus(p, "waived")}><Ban className="w-4 h-4" /></Button>}
                 <Button size="sm" variant="ghost" onClick={() => remove(p)}><Trash2 className="w-4 h-4" /></Button>
               </TableCell>

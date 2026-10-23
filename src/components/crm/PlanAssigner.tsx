@@ -37,6 +37,8 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
   const domain = useMemo(() => DOMAINS.find((d) => d.key === domainKey)!, [domainKey]);
   const weeks = week === "all" ? Array.from({ length: WEEKS }, (_, i) => i + 1) : [Number(week)];
   const refs = RESOURCES[domainKey] || [];
+  const maxCap = Math.max(...people.map((p) => planWeeks(p.internship_start, p.internship_end)));
+  useEffect(() => { if (week !== "all" && Number(week) > maxCap) setWeek("1"); }, [maxCap, week]);
 
   const assign = async () => {
     if (!user || people.length === 0) return toast({ title: "Select at least one person", variant: "destructive" });
@@ -45,10 +47,11 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
     const { data: existing } = await supabase.from("tasks").select("assigned_to,title").in("assigned_to", ids);
     const have = new Set((existing || []).map((t: any) => `${t.assigned_to}|${t.title}`));
     const rows: any[] = [];
+    let skipped = 0;
     for (const p of people) {
       const cap = planWeeks(p.internship_start, p.internship_end);
       for (const w of weeks) {
-        if (week === "all" && w > cap) continue; // a 1-month internship does not get 8 weeks of work
+        if (w > cap) { skipped++; continue; } // a 1-month internship does not get 8 weeks of work
         domain.weeks[w - 1].forEach((raw, i) => {
           if (week !== "all" && !picked[i]) return;
           const { title, description } = splitTask(raw);
@@ -61,7 +64,7 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
         });
       }
     }
-    if (rows.length === 0) { setBusy(false); return toast({ title: "Nothing new to assign", description: "These tasks were already assigned." }); }
+    if (rows.length === 0) { setBusy(false); return toast({ title: "Nothing new to assign", description: skipped ? "That week is beyond this internship's length, so nothing was assigned." : "These tasks were already assigned." }); }
     const { error } = await supabase.from("tasks").insert(rows);
     setBusy(false);
     if (error) return toast({ title: "Could not assign", description: error.message, variant: "destructive" });
@@ -98,8 +101,8 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
           <Select value={week} onValueChange={setWeek}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {Array.from({ length: WEEKS }, (_, i) => <SelectItem key={i} value={String(i + 1)}>Week {i + 1}</SelectItem>)}
-              <SelectItem value="all">All weeks of the internship (up to {WEEKS})</SelectItem>
+              {Array.from({ length: maxCap }, (_, i) => <SelectItem key={i} value={String(i + 1)}>Week {i + 1}</SelectItem>)}
+              <SelectItem value="all">All weeks of the internship ({maxCap})</SelectItem>
             </SelectContent>
           </Select>
         </div>
