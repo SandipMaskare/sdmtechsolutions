@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, Mail, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, ExternalLink, Mail, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
 import EmailComposer from "./EmailComposer";
 
@@ -19,15 +20,55 @@ interface Application {
   job_id: string;
 }
 
+const isUrl = (v: string) => /^https?:\/\//i.test(v.trim());
+
 const ApplicationsManager = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [emailId, setEmailId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const [titles, setTitles] = useState<Record<string, { title: string; kind: string }>>({});
+  const [mode, setMode] = useState<"form" | "site">("form");
+  const [sheetUrl, setSheetUrl] = useState("");
+  const [savingSet, setSavingSet] = useState(false);
+
   useEffect(() => {
     fetchApplications();
+    supabase.from("jobs").select("id,title,kind").then(({ data }) => {
+      const m: Record<string, { title: string; kind: string }> = {};
+      (data || []).forEach((j: any) => (m[j.id] = { title: j.title, kind: j.kind }));
+      setTitles(m);
+    });
+    supabase.from("website_content").select("section_key,content").in("section_key", ["apply_mode", "applications_sheet_url"]).then(({ data }) => {
+      (data || []).forEach((r: any) => {
+        if (r.section_key === "apply_mode") setMode((r.content || "").trim().toLowerCase() === "site" ? "site" : "form");
+        if (r.section_key === "applications_sheet_url") setSheetUrl(r.content || "");
+      });
+    });
   }, []);
+
+  const saveSetting = async (key: string, value: string) => {
+    const { error } = await supabase.from("website_content").upsert({ section_key: key, title: key, content: value }, { onConflict: "section_key" });
+    if (error) toast({ title: "Could not save", description: error.message, variant: "destructive" });
+    return !error;
+  };
+
+  const changeMode = async (m: "form" | "site") => {
+    setSavingSet(true);
+    if (await saveSetting("apply_mode", m)) {
+      setMode(m);
+      toast({ title: m === "site" ? "Applicants now use the website form" : "Applicants now use the Google Form" });
+    }
+    setSavingSet(false);
+  };
+
+  const saveSheet = async () => {
+    if (sheetUrl.trim() && !isUrl(sheetUrl)) return toast({ title: "Paste the full link, starting with https://", variant: "destructive" });
+    setSavingSet(true);
+    if (await saveSetting("applications_sheet_url", sheetUrl.trim())) toast({ title: "Saved" });
+    setSavingSet(false);
+  };
 
   const fetchApplications = async () => {
     const { data, error } = await supabase
@@ -73,9 +114,28 @@ const ApplicationsManager = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-foreground">Job Applications ({applications.length})</h2>
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3 text-sm">
+        <p className="font-semibold text-foreground">Where do applicants apply?</p>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant={mode === "form" ? "default" : "outline"} disabled={savingSet} onClick={() => changeMode("form")}>Google Form (answers go to your Google Sheet)</Button>
+          <Button size="sm" variant={mode === "site" ? "default" : "outline"} disabled={savingSet} onClick={() => changeMode("site")}>Website form (answers appear on this page)</Button>
+        </div>
+        <p className="text-muted-foreground">
+          {mode === "form"
+            ? "Right now the Apply buttons open your Google Form, so those applications are in the Google Sheet, not in the list below. Switch to the website form to see every application here, with the resume."
+            : "Applicants fill the website form (they must be signed in). Their application and resume appear in the list below."}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input value={sheetUrl} onChange={(e) => setSheetUrl(e.target.value)} placeholder="Paste the link of your Google Form responses sheet" className="max-w-md" />
+          <Button size="sm" variant="outline" disabled={savingSet} onClick={saveSheet}>Save link</Button>
+          {isUrl(sheetUrl) && (
+            <Button size="sm" asChild><a href={sheetUrl.trim()} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4 mr-1" /> Open Google Form responses</a></Button>
+          )}
+        </div>
+      </div>
+      <h2 className="text-xl font-semibold text-foreground">Applications on this website ({applications.length})</h2>
       {applications.length === 0 ? (
-        <p className="text-muted-foreground py-4">No applications yet.</p>
+        <p className="text-muted-foreground py-4">No applications saved on the website yet. Applications made through the Google Form are in your Google Sheet.</p>
       ) : (
         <div className="space-y-3">
           {applications.map((app) => (
@@ -83,6 +143,7 @@ const ApplicationsManager = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-semibold text-foreground">{app.full_name}</h3>
+                  {titles[app.job_id] && <p className="text-sm font-medium text-primary">{titles[app.job_id].kind === "internship" ? "Internship" : "Job"}: {titles[app.job_id].title}</p>}
                   <p className="text-sm text-muted-foreground">{app.email}{app.phone && ` • ${app.phone}`}</p>
                   <p className="text-xs text-muted-foreground mt-1">Applied {new Date(app.applied_at).toLocaleDateString()}</p>
                   {app.cover_letter && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{app.cover_letter}</p>}
