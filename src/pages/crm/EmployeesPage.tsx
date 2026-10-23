@@ -210,7 +210,27 @@ const EmployeesPage = () => {
     toast(error ? { title: "Email not sent", description: error, variant: "destructive" } : { title: "Reminder sent", description: `${targets.length} intern(s) emailed.` });
   };
 
-  const filteredEmployees = employees.filter(
+  type View = "intern_assigned" | "intern_waiting" | "employee" | "admin" | "user" | "all";
+  const [view, setView] = useState<View>("intern_waiting");
+  const inView = (emp: Employee) => {
+    const r = roleMap[emp.user_id];
+    const has = (taskMap[emp.user_id] || []).length > 0;
+    switch (view) {
+      case "intern_assigned": return r === "intern" && has;
+      case "intern_waiting": return r === "intern" && !has;
+      case "employee": return r === "employee";
+      case "admin": return r === "admin";
+      case "user": return !r;
+      default: return true;
+    }
+  };
+  const countOf = (v: View) => employees.filter((e) => {
+    const r = roleMap[e.user_id]; const has = (taskMap[e.user_id] || []).length > 0;
+    return v === "intern_assigned" ? r === "intern" && has : v === "intern_waiting" ? r === "intern" && !has : v === "employee" ? r === "employee" : v === "admin" ? r === "admin" : v === "user" ? !r : true;
+  }).length;
+  const VIEWS: [View, string][] = [["intern_waiting", "Interns: no task yet"], ["intern_assigned", "Interns: task assigned"], ["employee", "Employees"], ["admin", "Admins"], ["user", "Normal users"], ["all", "Everyone"]];
+
+  const filteredEmployees = employees.filter(inView).filter(
     (emp) =>
       emp.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -245,6 +265,14 @@ const EmployeesPage = () => {
           <Button variant="outline" onClick={sendReminders}><BellRing className="h-4 w-4 mr-2" />Remind staff to complete profile</Button>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          {VIEWS.map(([v, label]) => (
+            <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 rounded-full text-sm border transition ${view === v ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border hover:bg-muted"}`}>
+              {label} ({countOf(v)})
+            </button>
+          ))}
+        </div>
+
         {/* Search */}
         <Card>
           <CardContent className="pt-6">
@@ -263,7 +291,7 @@ const EmployeesPage = () => {
         {/* Employees Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Employees ({filteredEmployees.length})</CardTitle>
+            <CardTitle>{VIEWS.find(([v]) => v === view)?.[1]} ({filteredEmployees.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -378,7 +406,7 @@ const EmployeesPage = () => {
             {filteredEmployees.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <UserPlus className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No employees found</p>
+                <p>No one in this list</p>
               </div>
             )}
           </CardContent>

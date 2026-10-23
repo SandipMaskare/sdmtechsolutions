@@ -39,6 +39,7 @@ const PersonProfilePage = () => {
   const [edit, setEdit] = useState(false);
   const [f, setF] = useState<any>({});
   const [assignOpen, setAssignOpen] = useState(false);
+  const [pays, setPays] = useState<any[]>([]);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -52,6 +53,8 @@ const PersonProfilePage = () => {
     setPersonRole(pickRole(rl.data));
     setTasks(tk.data || []);
     setSubs(sb.data || []);
+    const py = await (supabase as any).from("payments").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+    setPays(py.data || []);
   }, [userId]);
 
   useEffect(() => {
@@ -135,6 +138,15 @@ const PersonProfilePage = () => {
           </div>
         </div>
 
+        {isIntern && (
+          <Card className="border-primary/40"><CardContent className="pt-6 text-sm flex flex-wrap gap-x-8 gap-y-2">
+            <span><b>Internship length:</b> {p.internship_start && p.internship_end ? `${planWeeks(p.internship_start, p.internship_end)} week(s) ≈ ${Math.max(1, Math.round(planWeeks(p.internship_start, p.internship_end) / 4))} month(s)` : "not set — add start and end dates in Edit profile"}</span>
+            <span><b>Dates:</b> {durationText(p)}</span>
+            <span><b>Tasks allowed:</b> {p.internship_start && p.internship_end ? `weeks 1 to ${planWeeks(p.internship_start, p.internship_end)} only` : "set dates first"}</span>
+            <span><b>Task status:</b> {tasks.length ? `${tasks.length} assigned` : "no task assigned yet"}</span>
+          </CardContent></Card>
+        )}
+
         {miss.length > 0 && (
           <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/20"><CardContent className="pt-6 text-sm text-orange-700 dark:text-orange-300">
             Profile incomplete — missing: {miss.map((m) => m.label).join(", ")}. {isIntern && "The intern cannot open the portal until these are filled."}
@@ -183,7 +195,7 @@ const PersonProfilePage = () => {
             <CardTitle className="text-base">Tasks ({done}/{tasks.length} approved · {subs.length} submissions)</CardTitle>
           </CardHeader>
           <CardContent>
-            <TaskManager person={{ user_id: p.user_id, full_name: p.full_name, email: p.email, role: personRole, internship_domain: p.internship_domain }} tasks={tasks} onChange={load} />
+            <TaskManager person={{ user_id: p.user_id, full_name: p.full_name, email: p.email, role: personRole, internship_domain: p.internship_domain }} tasks={tasks} onChange={load} totalWeeks={isIntern && p.internship_start && p.internship_end ? planWeeks(p.internship_start, p.internship_end) : null} internshipEnd={isIntern ? p.internship_end : null} />
           </CardContent>
         </Card>
 
@@ -193,6 +205,20 @@ const PersonProfilePage = () => {
             <PerformanceCharts tasks={tasks} subs={subs} />
           </div>
         )}
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Activity history</CardTitle></CardHeader>
+          <CardContent>
+            {(() => {
+              const ev: { at: string; text: string }[] = [{ at: p.created_at, text: "Joined the website" }];
+              tasks.forEach((t) => ev.push({ at: t.created_at, text: `Task assigned: ${t.title}${t.week ? ` (week ${t.week})` : ""}` }));
+              subs.forEach((x) => ev.push({ at: x.submitted_at, text: `Submitted work${x.review_status ? ` — ${x.review_status}` : ""}` }));
+              pays.forEach((x) => { ev.push({ at: x.created_at, text: `Payment assigned: ${x.title} (₹${Number(x.amount).toLocaleString("en-IN")})` }); if (x.verified_at) ev.push({ at: x.verified_at, text: `Payment verified: ${x.title}` }); });
+              ev.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+              return <ul className="space-y-2 text-sm max-h-80 overflow-auto">{ev.map((e, i) => <li key={i} className="flex gap-3"><span className="text-xs text-muted-foreground w-24 shrink-0">{fmtDate(e.at)}</span><span>{e.text}</span></li>)}</ul>;
+            })()}
+          </CardContent>
+        </Card>
 
         {isIntern && (
           <Card>
