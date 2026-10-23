@@ -15,6 +15,7 @@ const supabase: any = typedClient;
 import { useToast } from "@/hooks/use-toast";
 import { fmtDate } from "@/lib/internProfile";
 import { useUserRole } from "@/hooks/useUserRole";
+import RazorpayButton from "@/components/portal/RazorpayButton";
 import PaymentReceipt from "@/components/portal/PaymentReceipt";
 import { CheckCircle2, Receipt } from "lucide-react";
 
@@ -99,6 +100,13 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
                   <Button size="sm" onClick={() => setReceipt(p)}><Receipt className="w-4 h-4 mr-2" />View / download receipt</Button>
                 </div>
               )}
+              {["requested", "rejected"].includes(p.status) && (
+                <div className="rounded-lg border border-primary/40 p-3 space-y-2">
+                  <p className="text-sm font-medium">Pay online with Razorpay (UPI, cards, net banking)</p>
+                  <p className="text-xs text-muted-foreground">Pay the amount shown above ({"\u20B9"}{Number(p.amount).toLocaleString("en-IN")}). After paying, copy the Razorpay payment ID (starts with pay_) or UTR from the receipt and enter it below.</p>
+                  <RazorpayButton />
+                </div>
+              )}
               {["requested", "rejected"].includes(p.status) && methods.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Pay using any of these methods</p>
@@ -123,7 +131,7 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
                       </select>
                     </div>
                   )}
-                  <div className="space-y-1.5"><Label>Transaction / UTR number</Label><Input value={ref[p.id] || ""} onChange={(e) => setRef({ ...ref, [p.id]: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Razorpay payment ID / Transaction / UTR number</Label><Input value={ref[p.id] || ""} onChange={(e) => setRef({ ...ref, [p.id]: e.target.value })} /></div>
                   <div className="space-y-1.5"><Label>Payment screenshot (optional)</Label><Input type="file" accept="image/*,application/pdf" onChange={(e) => setFile({ ...file, [p.id]: e.target.files?.[0] || null })} /></div>
                   <Button onClick={() => submit(p)} disabled={busy === p.id}><Upload className="w-4 h-4 mr-2" />{busy === p.id ? "Submitting..." : "Submit payment details"}</Button>
                 </div>
