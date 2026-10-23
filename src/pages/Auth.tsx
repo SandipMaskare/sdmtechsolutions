@@ -19,6 +19,15 @@ const PHONE_OTP = import.meta.env.VITE_ENABLE_PHONE_OTP === "true";
 
 type Mode = "login" | "signup" | "verifyEmail" | "verifyPhone" | "verifyLogin";
 
+/** Supabase says "Token has expired or is invalid" for old, already used or replaced codes. Explain what to do. */
+const otpMessage = (raw?: string) => {
+  const m = (raw ?? "").toLowerCase();
+  if (m.includes("expired") || m.includes("invalid")) return "That code is wrong, expired, or was replaced by a newer one. Open the NEWEST email, enter the 6 digits from it, or tap Resend code and use the new email.";
+  if (m.includes("rate") || m.includes("security purposes")) return "Too many tries. Please wait a minute and try again.";
+  return raw ?? "Please try again.";
+};
+const digitsOnly = (v: string) => v.replace(/\D/g, "").slice(0, 6);
+
 const emailSchema = z.string().trim().email("Please enter a valid email address");
 const strongPassword = z
   .string()
@@ -148,7 +157,7 @@ const Auth = () => {
           if (msg.includes("email not confirmed")) {
             await supabase.auth.resend({ type: "signup", email: email.trim() });
             setOtp("");
-            setCooldown(30);
+            setCooldown(60);
             setMode("verifyEmail");
             toast({ title: "Verify your email", description: "We sent a new code to your email." });
           } else {
@@ -189,7 +198,7 @@ const Auth = () => {
           await continueAfterSession(data.user as any);
         } else {
           setOtp("");
-          setCooldown(30);
+          setCooldown(60);
           setMode("verifyEmail");
           toast({ title: "Check your email", description: `We sent a verification code to ${email.trim()}` });
         }
@@ -204,9 +213,15 @@ const Auth = () => {
   const verifyEmail = async () => {
     if (otp.length < 6) return;
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({ email: email.trim(), token: otp, type: "signup" });
+    // The code can be issued as a "signup" or a generic "email" token depending on how the account was created, so try both.
+    let { data, error } = await supabase.auth.verifyOtp({ email: email.trim(), token: digitsOnly(otp), type: "signup" });
     if (error || !data.user) {
-      toast({ title: "Invalid code", description: error?.message ?? "Please try again.", variant: "destructive" });
+      const retry = await supabase.auth.verifyOtp({ email: email.trim(), token: digitsOnly(otp), type: "email" });
+      if (!retry.error && retry.data.user) { data = retry.data; error = null; }
+    }
+    if (error || !data.user) {
+      toast({ title: "Code not accepted", description: otpMessage(error?.message), variant: "destructive" });
+      setOtp("");
       setLoading(false);
       return;
     }
@@ -220,9 +235,10 @@ const Auth = () => {
   const verifyLogin = async () => {
     if (otp.length < 6) return;
     setLoading(true);
-    const { data, error } = await verifyLoginCode(email.trim(), otp);
+    const { data, error } = await verifyLoginCode(email.trim(), digitsOnly(otp));
     if (error || !data.user) {
-      toast({ title: "Invalid or expired code", description: error?.message ?? "Please try again.", variant: "destructive" });
+      toast({ title: "Code not accepted", description: otpMessage(error?.message), variant: "destructive" });
+      setOtp("");
       setLoading(false);
       return;
     }
@@ -236,9 +252,10 @@ const Auth = () => {
   const verifyPhone = async () => {
     if (otp.length < 6) return;
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "phone_change" });
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token: digitsOnly(otp), type: "phone_change" });
     if (error) {
-      toast({ title: "Invalid code", description: error.message, variant: "destructive" });
+      toast({ title: "Code not accepted", description: otpMessage(error.message) + (mode === "verifyPhone" ? " Mobile codes expire quickly, so enter it within a minute." : ""), variant: "destructive" });
+      setOtp("");
       setLoading(false);
       return;
     }
@@ -267,8 +284,9 @@ const Auth = () => {
     }
     if (err) toast({ title: "Could not resend", description: err, variant: "destructive" });
     else {
-      setCooldown(mode === "verifyLogin" ? 60 : 30);
-      toast({ title: "Code sent" });
+      setCooldown(60);
+      setOtp("");
+      toast({ title: "New code sent", description: "Use the newest message. Older codes no longer work." });
     }
   };
 
@@ -392,6 +410,12 @@ const Auth = () => {
                   </button>
                 </div>
                 {errors.password && <p className="text-destructive text-sm mt-1">{errors.password}</p>}
+                {isLogin && (
+                  <div className="flex justify-between text-sm mt-2">
+                    <Link to="/forgot" className="text-primary hover:underline">Forgot password?</Link>
+                    <Link to="/forgot?tab=username" className="text-primary hover:underline">Forgot username?</Link>
+                  </div>
+                )}
                 {!isLogin && !errors.password && (
                   <p className="text-xs text-muted-foreground mt-1">8+ characters with upper & lower case, a number and a special character.</p>
                 )}

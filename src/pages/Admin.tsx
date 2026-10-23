@@ -24,6 +24,8 @@ import TestimonialsManager from "@/components/admin/TestimonialsManager";
 import ContactSubmissions from "@/components/admin/ContactSubmissions";
 import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
+import PeopleManager from "@/components/admin/PeopleManager";
+import { Users } from "lucide-react";
 import EmailCenter from "@/components/admin/EmailCenter";
 import ChatInbox from "@/components/admin/ChatInbox";
 import OfferLetters from "@/components/admin/OfferLetters";
@@ -113,12 +115,15 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8" style={isAppMode() ? { paddingTop: "calc(3.5rem + env(safe-area-inset-top) + 1rem)", paddingBottom: "6rem" } : undefined}>
         <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") || "jobs"} className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-10 h-auto">
+          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-11 h-auto">
             <TabsTrigger value="jobs">
               <Briefcase className="w-4 h-4" /> Jobs
             </TabsTrigger>
             <TabsTrigger value="applications">
               <ClipboardList className="w-4 h-4" /> Applications
+            </TabsTrigger>
+            <TabsTrigger value="people">
+              <Users className="w-4 h-4" /> People
             </TabsTrigger>
             <TabsTrigger value="services">
               <Settings className="w-4 h-4" /> Services
@@ -151,6 +156,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="applications">
             <ApplicationsManager />
+          </TabsContent>
+          <TabsContent value="people">
+            <PeopleManager />
           </TabsContent>
           <TabsContent value="services">
             <ServicesManager />
