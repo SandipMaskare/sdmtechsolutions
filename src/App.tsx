@@ -47,6 +47,7 @@ const PortalLogin = lazy(() => import("./pages/portal/PortalLogin"));
 const PortalDashboard = lazy(() => import("./pages/portal/PortalDashboard"));
 const PortalWork = lazy(() => import("./pages/portal/PortalWork"));
 const PortalSubmissions = lazy(() => import("./pages/portal/PortalSubmissions"));
+const PortalLearn = lazy(() => import("./pages/portal/PortalLearn"));
 const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
 const PortalAnalytics = lazy(() => import("./pages/portal/PortalAnalytics"));
 const PortalPayments = lazy(() => import("./pages/portal/PortalPayments"));
@@ -55,6 +56,8 @@ const TaskLibraryPage = lazy(() => import("./pages/crm/TaskLibraryPage"));
 const PaymentsAdminPage = lazy(() => import("./pages/crm/PaymentsAdminPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ForgotAccount = lazy(() => import("./pages/ForgotAccount"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
@@ -98,6 +101,8 @@ const App = () => (
               <Route path="/terms" element={<LegalPage kind="terms" />} />
               <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot" element={<ForgotAccount />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/profile" element={<ProfilePage />} />
 
@@ -109,6 +114,7 @@ const App = () => (
               <Route path="/employee/work" element={<RequireRole role="employee"><PortalWork kind="employee" /></RequireRole>} />
               <Route path="/employee/analytics" element={<RequireRole role="employee"><PortalAnalytics kind="employee" /></RequireRole>} />
               <Route path="/employee/profile" element={<RequireRole role="employee"><PortalProfile kind="employee" /></RequireRole>} />
+              <Route path="/employee/learn" element={<RequireRole role="employee"><PortalLearn kind="employee" /></RequireRole>} />
               <Route path="/employee/submissions" element={<RequireRole role="employee"><PortalSubmissions kind="employee" /></RequireRole>} />
 
               {/* Intern portal */}
@@ -118,6 +124,7 @@ const App = () => (
               <Route path="/intern/analytics" element={<RequireRole role="intern"><PortalAnalytics kind="intern" /></RequireRole>} />
               <Route path="/intern/profile" element={<RequireRole role="intern"><PortalProfile kind="intern" /></RequireRole>} />
               <Route path="/intern/payments" element={<RequireRole role="intern"><PortalPayments kind="intern" /></RequireRole>} />
+              <Route path="/intern/learn" element={<RequireRole role="intern"><PortalLearn kind="intern" /></RequireRole>} />
               <Route path="/intern/submissions" element={<RequireRole role="intern"><PortalSubmissions kind="intern" /></RequireRole>} />
 
               {/* CRM Routes */}
