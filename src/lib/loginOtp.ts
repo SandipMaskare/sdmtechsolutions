@@ -29,5 +29,9 @@ export async function sendLoginCode(email: string): Promise<Result> {
 
 /** Step 2: the code from the email. On success the user is signed in. */
 export async function verifyLoginCode(email: string, code: string) {
-  return supabase.auth.verifyOtp({ email, token: code, type: "email" });
+  const first = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+  if (!first.error && first.data.user) return first;
+  // Some projects issue the code as a magic-link token: try that type before giving up.
+  const second = await supabase.auth.verifyOtp({ email, token: code, type: "magiclink" });
+  return !second.error && second.data.user ? second : first;
 }
