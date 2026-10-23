@@ -26,7 +26,7 @@ const docs: Record<Kind, { title: string; desc: string; blocks: Block[] }> = {
         "We use your information to respond to enquiries, create and secure your account, process applications, issue internship letters, send service-related emails such as verification codes and confirmations, improve our website and protect it from misuse. We do not sell your personal information.",
       ]},
       { h: "Cookies and advertising", p: [
-        "Our website uses cookies and similar technologies to keep you signed in and to understand how the site is used. Third-party vendors, including Google, use cookies to serve ads based on a user's previous visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to our site and other sites on the internet.",
+        "Our website uses cookies and similar technologies to keep you signed in and to understand how the site is used (we use Google Analytics, which collects anonymous usage data such as pages visited, device and approximate location, only after you accept cookies). Third-party vendors, including Google, use cookies to serve ads based on a user's previous visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to our site and other sites on the internet.",
         "You may opt out of personalised advertising by visiting Google Ads Settings (https://adssettings.google.com). You can also control cookies through your browser settings. Blocking some cookies may affect how parts of the site work.",
       ]},
       { h: "Service providers", p: [

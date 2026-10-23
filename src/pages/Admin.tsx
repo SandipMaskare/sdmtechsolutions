@@ -25,6 +25,7 @@ import ContactSubmissions from "@/components/admin/ContactSubmissions";
 import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import PeopleManager from "@/components/admin/PeopleManager";
+import AnalyticsSettings from "@/components/admin/AnalyticsSettings";
 import { Users } from "lucide-react";
 import EmailCenter from "@/components/admin/EmailCenter";
 import ChatInbox from "@/components/admin/ChatInbox";
@@ -115,7 +116,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8" style={isAppMode() ? { paddingTop: "calc(3.5rem + env(safe-area-inset-top) + 1rem)", paddingBottom: "6rem" } : undefined}>
         <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") || "jobs"} className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-11 h-auto">
+          <TabsList className="grid w-full max-w-5xl grid-cols-4 sm:grid-cols-12 h-auto">
             <TabsTrigger value="jobs">
               <Briefcase className="w-4 h-4" /> Jobs
             </TabsTrigger>
@@ -145,6 +146,9 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="offers">
               <FileSignature className="w-4 h-4" /> Offers
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <ClipboardList className="w-4 h-4" /> Analytics
             </TabsTrigger>
             <TabsTrigger value="content">
               <FileText className="w-4 h-4" /> Content
@@ -180,6 +184,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="offers">
             <OfferLetters />
+          </TabsContent>
+          <TabsContent value="analytics">
+            <AnalyticsSettings />
           </TabsContent>
           <TabsContent value="content">
             <ContentManager />
