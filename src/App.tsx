@@ -24,6 +24,7 @@ const AppHome = lazy(() => import("./pages/AppHome"));
 import { isAppMode } from "@/lib/appMode";
 
 const ChatWidget = lazy(() => import("@/components/ChatWidget"));
+const CookieConsent = lazy(() => import("@/components/CookieConsent"));
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => (
             </Routes>
 
             <ChatWidget />
+            <CookieConsent />
             {isAppMode() && <AppTabBar />}
             {isAppMode() && <AdminTabBar />}
             {isAppMode() && <AdBanner />}
