@@ -114,6 +114,10 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
                 {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            <div className="flex justify-between text-sm -mt-2">
+              <Link to="/forgot" className="text-primary hover:underline">Forgot password?</Link>
+              <Link to="/forgot?tab=username" className="text-primary hover:underline">Forgot username?</Link>
+            </div>
             <Button type="submit" size="lg" className="w-full" disabled={loading}>
               <ShieldCheck className="w-5 h-5 mr-2" />
               {loading ? "Signing in..." : "Sign In"}
