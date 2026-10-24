@@ -13,15 +13,18 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6133739251714576"
         crossorigin="anonymous"></script>
 
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6EWCXKP3C2"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-6EWCXKP3C2');
-</script>
+    <!-- Google tag (gtag.js) with cookie consent: counts visits, stores analytics cookies only after Accept -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6EWCXKP3C2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      var sdmC = 'denied';
+      try { if (localStorage.getItem('sdm_cookie_consent') === 'yes') sdmC = 'granted'; } catch (e) {}
+      gtag('consent', 'default', { analytics_storage: sdmC, ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+      gtag('js', new Date());
+      gtag('config', 'G-6EWCXKP3C2', { send_page_view: false });
+      window.__sdmGA = 'G-6EWCXKP3C2';
+    </script>
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
