@@ -3,7 +3,8 @@ import { Download, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { canPreview, downloadPrivateFile, fileName, isImage, signedFileUrl } from "@/lib/files";
+import { canPreview, downloadPrivateFile, fileName } from "@/lib/files";
+import FileViewer from "./FileViewer";
 
 interface Props {
   bucket: string;
@@ -15,27 +16,14 @@ interface Props {
 /** "Resume" downloads straight away; the eye button previews PDFs and images in a popup. */
 const FilePreviewButtons = ({ bucket, path, label = "Download", size = "sm" }: Props) => {
   const { toast } = useToast();
-  const [busy, setBusy] = useState<"dl" | "pv" | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState<"dl" | null>(null);
+    const [open, setOpen] = useState(false);
 
   const download = async () => {
     setBusy("dl");
     const ok = await downloadPrivateFile(bucket, path);
     setBusy(null);
     if (!ok) toast({ title: "Could not download the file", variant: "destructive" });
-  };
-
-  const preview = async () => {
-    setBusy("pv");
-    const url = await signedFileUrl(bucket, path);
-    setBusy(null);
-    if (!url) {
-      toast({ title: "Could not open the file", variant: "destructive" });
-      return;
-    }
-    setPreviewUrl(url);
-    setOpen(true);
   };
 
   return (
@@ -45,22 +33,18 @@ const FilePreviewButtons = ({ bucket, path, label = "Download", size = "sm" }: P
         {label}
       </Button>
       {canPreview(path) && (
-        <Button size={size} variant="outline" onClick={preview} disabled={busy !== null} title="Preview">
-          {busy === "pv" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+        <Button size={size} variant="outline" onClick={() => setOpen(true)} title="Preview">
+          <Eye className="w-4 h-4" />
           <span className="ml-1">Preview</span>
         </Button>
       )}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[85vh] flex flex-col">
+        <DialogContent className="max-w-5xl w-[95vw] h-[88vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="truncate pr-8">{fileName(path)}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0 rounded-md border border-border overflow-hidden bg-muted">
-            {previewUrl && (isImage(path) ? (
-              <img src={previewUrl} alt={fileName(path)} className="w-full h-full object-contain" />
-            ) : (
-              <iframe src={previewUrl} title={fileName(path)} className="w-full h-full" />
-            ))}
+            {open && <FileViewer bucket={bucket} path={path} />}
           </div>
           <div className="flex justify-end">
             <Button onClick={download} disabled={busy !== null}>
