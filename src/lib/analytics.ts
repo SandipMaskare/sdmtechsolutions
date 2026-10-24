@@ -7,9 +7,14 @@ let loaded = false;
 export const getConsent = (): "yes" | "no" | null => {
   try { const v = localStorage.getItem(CONSENT_KEY); return v === "yes" || v === "no" ? v : null; } catch { return null; }
 };
+const pushConsent = (v: "yes" | "no" | null, kind: "default" | "update") => {
+  const w = window as any;
+  if (!w.gtag) return;
+  w.gtag("consent", kind, { analytics_storage: v === "yes" ? "granted" : "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
+};
 export const setConsent = (v: "yes" | "no") => {
   try { localStorage.setItem(CONSENT_KEY, v); } catch { /* ignore */ }
-  if (v === "yes") void startAnalytics();
+  if (loaded) pushConsent(v, "update"); else void startAnalytics();
 };
 
 const loadId = async () => {
@@ -20,15 +25,19 @@ const loadId = async () => {
   return gaId;
 };
 
-/** Loads Google Analytics only after the visitor accepts cookies and an ID is saved in Admin > Analytics. */
+/**
+ * Loads Google Analytics (Google Consent Mode): visitors are counted for everyone, but analytics cookies are only
+ * stored after the visitor presses Accept. Needs a Measurement ID saved in Admin > Analytics.
+ */
 export const startAnalytics = async () => {
-  if (loaded || getConsent() !== "yes") return;
+  if (loaded) return;
   const id = await loadId();
   if (!id) return;
   loaded = true;
   const w = window as any;
   w.dataLayer = w.dataLayer || [];
   w.gtag = function () { w.dataLayer.push(arguments); };
+  pushConsent(getConsent(), "default");
   w.gtag("js", new Date());
   w.gtag("config", id, { send_page_view: false });
   const s = document.createElement("script");
