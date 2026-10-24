@@ -5,7 +5,7 @@ import { getConsent, setConsent, startAnalytics, trackPage } from "@/lib/analyti
 const CookieConsent = () => {
   const [show, setShow] = useState(false);
   const { pathname } = useLocation();
-  useEffect(() => { if (getConsent() === null) setShow(true); else void startAnalytics(); }, []);
+  useEffect(() => { if (getConsent() === null) setShow(true); void startAnalytics(); }, []);
   useEffect(() => { trackPage(); }, [pathname]);
   if (!show) return null;
   const choose = (v: "yes" | "no") => { setConsent(v); setShow(false); };
