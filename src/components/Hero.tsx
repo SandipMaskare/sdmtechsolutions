@@ -89,7 +89,7 @@ const Hero = () => {
                 size="lg"
                 variant="outline"
                 onClick={() => navigate("/about")}
-                className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10 font-semibold px-8"
+                className="bg-transparent border-secondary-foreground/40 text-secondary-foreground hover:bg-secondary-foreground/15 hover:text-secondary-foreground font-semibold px-8"
               >
                 Learn More
                 <ChevronRight className="ml-1 w-5 h-5" />
