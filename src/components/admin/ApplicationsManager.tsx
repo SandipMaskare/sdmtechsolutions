@@ -3,10 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, ExternalLink, Mail, Trash2 } from "lucide-react";
+import { ExternalLink, Mail, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
 import EmailComposer from "./EmailComposer";
+import { notifyUser } from "@/lib/notify";
+
+const STAGES: { key: string; label: string; cls: string }[] = [
+  { key: "pending", label: "New", cls: "bg-slate-500" },
+  { key: "reviewed", label: "Viewed", cls: "bg-blue-500" },
+  { key: "shortlisted", label: "Shortlisted", cls: "bg-amber-500" },
+  { key: "interview", label: "Interview call", cls: "bg-purple-600" },
+  { key: "selected", label: "Selected", cls: "bg-green-600" },
+  { key: "rejected", label: "Rejected", cls: "bg-red-500" },
+];
+const stageOf = (k: string) => STAGES.find((x) => x.key === k) || { key: k, label: k, cls: "bg-slate-500" };
 
 interface Application {
   id: string;
@@ -32,6 +43,7 @@ const ApplicationsManager = () => {
   const [mode, setMode] = useState<"form" | "site">("form");
   const [sheetUrl, setSheetUrl] = useState("");
   const [savingSet, setSavingSet] = useState(false);
+  const [stage, setStage] = useState("all");
 
   useEffect(() => {
     fetchApplications();
@@ -84,18 +96,36 @@ const ApplicationsManager = () => {
     setLoading(false);
   };
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (app: Application, status: string) => {
+    let extra = "";
+    if (status === "interview") {
+      const when = window.prompt("Interview date, time and mode/link (this goes in the email):", "");
+      if (when === null) return;
+      extra = when.trim();
+    }
     const { error } = await supabase
       .from("job_applications")
       .update({ status, reviewed_at: new Date().toISOString() })
-      .eq("id", id);
+      .eq("id", app.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
 
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    const role = titles[app.job_id]?.title || "the position";
+    const kind = titles[app.job_id]?.kind === "internship" ? "internship" : "job";
+    const mail: Record<string, { subject: string; lines: string[] } | undefined> = {
+      reviewed: { subject: `We have viewed your application: ${role}`, lines: [`Thank you for applying for ${role} at SDM Technology. Our team has viewed your application. We will contact you about the next step soon.`] },
+      shortlisted: { subject: `You are shortlisted: ${role}`, lines: [`Good news! You have been shortlisted for ${role} at SDM Technology.`, "Our team will contact you shortly about the next step. Please keep your phone and email handy."] },
+      interview: { subject: `Interview call: ${role}`, lines: [`You are invited for an interview for ${role} at SDM Technology.`, extra ? `Interview details: ${extra}` : "We will share the interview date and time with you shortly.", "Please keep your resume ready and join on time."] },
+      selected: { subject: `Congratulations! You are selected: ${role}`, lines: [`Congratulations! You have been selected for the ${kind} ${role} at SDM Technology.`, "We will send your offer details and next steps soon. Thank you for your interest in working with us."] },
+      rejected: { subject: `Update on your application: ${role}`, lines: [`Thank you for your interest in ${role} at SDM Technology and for the time you spent applying.`, "After careful review we will not be moving ahead with your application this time. We encourage you to apply again for future openings and to follow us for new opportunities."] },
+    };
+    const m = mail[status];
+    if (m && app.email && window.confirm(`Status saved. Send the "${stageOf(status).label}" email to ${app.email}?`)) {
+      const r = await notifyUser({ email: app.email, name: app.full_name, subject: m.subject, lines: m.lines, template: "general", link: { label: "Visit SDM Technology", url: "https://www.sdmtechsolution.com/careers" } });
+      toast(r.error ? { title: "Status saved, but email failed", description: String(r.error), variant: "destructive" } : { title: `Marked ${stageOf(status).label} and email sent` });
     } else {
-      toast({ title: `Application marked as ${status}` });
-      fetchApplications();
+      toast({ title: `Marked ${stageOf(status).label}` });
     }
+    fetchApplications();
   };
 
   const deleteApplication = async (id: string) => {
@@ -134,11 +164,18 @@ const ApplicationsManager = () => {
         </div>
       </div>
       <h2 className="text-xl font-semibold text-foreground">Applications on this website ({applications.length})</h2>
+      <div className="flex flex-wrap gap-2">
+        {[{ key: "all", label: "All" }, ...STAGES].map((x) => (
+          <button key={x.key} onClick={() => setStage(x.key)} className={`px-3 py-1 rounded-full text-sm border ${stage === x.key ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"}`}>
+            {x.label} ({x.key === "all" ? applications.length : applications.filter((a) => a.status === x.key).length})
+          </button>
+        ))}
+      </div>
       {applications.length === 0 ? (
         <p className="text-muted-foreground py-4">No applications saved on the website yet. Applications made through the Google Form are in your Google Sheet.</p>
       ) : (
         <div className="space-y-3">
-          {applications.map((app) => (
+          {applications.filter((a) => stage === "all" || a.status === stage).map((app) => (
             <div key={app.id} className="p-4 bg-card border border-border rounded-xl">
               <div className="flex justify-between items-start">
                 <div>
@@ -148,17 +185,12 @@ const ApplicationsManager = () => {
                   <p className="text-xs text-muted-foreground mt-1">Applied {new Date(app.applied_at).toLocaleDateString()}</p>
                   {app.cover_letter && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{app.cover_letter}</p>}
                 </div>
-                <Badge variant={app.status === "reviewed" ? "default" : "secondary"}>
-                  {app.status === "reviewed" ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
-                  {app.status}
-                </Badge>
+                <Badge className={stageOf(app.status).cls}>{stageOf(app.status).label}</Badge>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
-                {app.status !== "reviewed" && (
-                  <Button size="sm" onClick={() => updateStatus(app.id, "reviewed")}>
-                    <CheckCircle className="w-4 h-4 mr-1" /> Mark Reviewed
-                  </Button>
-                )}
+                {STAGES.filter((x) => x.key !== "pending" && x.key !== app.status).map((x) => (
+                  <Button key={x.key} size="sm" variant={x.key === "rejected" ? "outline" : "default"} onClick={() => updateStatus(app, x.key)}>{x.label === "Viewed" ? "Mark viewed" : x.label}</Button>
+                ))}
                 {app.resume_url && (
                   <FilePreviewButtons bucket="resumes" path={app.resume_url} label="Resume" />
                 )}
