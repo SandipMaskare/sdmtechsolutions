@@ -1,4 +1,5 @@
 import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
+import SubmissionCode from "@/components/admin/SubmissionCode";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -251,7 +252,7 @@ const SubmissionsPage = () => {
 
         {/* Review Dialog */}
         <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-4xl max-h-[92vh] overflow-auto">
             <DialogHeader>
               <DialogTitle>Review Submission</DialogTitle>
             </DialogHeader>
@@ -293,6 +294,13 @@ const SubmissionsPage = () => {
                     <div className="flex flex-wrap gap-2 mt-1">
                       <FilePreviewButtons bucket="task-submissions" path={selectedSubmission.file_url!} label="Download file" />
                     </div>
+                  </div>
+                )}
+
+                {selectedSubmission.file_url && /\.(zip|py|js|mjs|html?|java|c|cpp|css|json|txt|ipynb)$/i.test(selectedSubmission.file_url) && (
+                  <div className="rounded-xl border border-primary/30 p-3 space-y-2">
+                    <Label className="text-primary">Check the code</Label>
+                    <SubmissionCode path={selectedSubmission.file_url} task={selectedSubmission.task_title} onFeedback={(t) => setReviewComments(t)} />
                   </div>
                 )}
 
