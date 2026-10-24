@@ -23,6 +23,7 @@ import AdBanner from "@/components/app/AdBanner";
 const AppHome = lazy(() => import("./pages/AppHome"));
 import { isAppMode } from "@/lib/appMode";
 
+import MotionLayer from "@/components/MotionLayer";
 const ChatWidget = lazy(() => import("@/components/ChatWidget"));
 const CookieConsent = lazy(() => import("@/components/CookieConsent"));
 
@@ -85,6 +86,7 @@ const App = () => (
           {/* Suspense Wrapper */}
           <Suspense fallback={<div style={{padding: "20px"}}>Loading...</div>}>
 
+            <MotionLayer>
             <Routes>
               <Route path="/" element={isAppMode() ? <AppHome /> : <Index />} />
               <Route path="/enter" element={<AppEntry />} />
@@ -144,6 +146,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </MotionLayer>
 
             <ChatWidget />
             <CookieConsent />

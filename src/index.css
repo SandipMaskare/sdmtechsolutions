@@ -200,3 +200,51 @@
 /* Admin / CRM pages inside the app: tables scroll sideways instead of overflowing */
 .app-mode main table { display: block; max-width: 100%; overflow-x: auto; }
 .app-mode main { overflow-x: hidden; }
+
+/* ---------- Motion layer (public site) ---------- */
+html { scroll-behavior: smooth; }
+@keyframes sdm-page-in { from { opacity: 0; } to { opacity: 1; } }
+.sdm-page { animation: sdm-page-in .35s ease-out both; }
+
+.sdm-reveal-ready .sdm-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  transition-delay: var(--sdm-d, 0ms);
+  will-change: opacity, transform;
+}
+.sdm-reveal-ready .sdm-reveal.sdm-in { opacity: 1; transform: none; }
+
+.sdm-public a, .sdm-public button { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .25s ease, transform .2s ease, opacity .2s ease; }
+.sdm-public button:not(:disabled):active, .sdm-public a[class*="rounded"]:active { transform: scale(.97); }
+.sdm-public .bg-card.border { transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; }
+.sdm-public .bg-card.border:hover { transform: translateY(-4px); box-shadow: 0 14px 34px -14px hsl(var(--primary) / .35); border-color: hsl(var(--primary) / .45); }
+.sdm-public img { transition: transform .5s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .sdm-page { animation: none; }
+  .sdm-reveal-ready .sdm-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .sdm-public .bg-card.border:hover { transform: none; }
+}
+
+/* ---------- Admin panel look ---------- */
+@keyframes sdm-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes sdm-shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.sdm-admin { background: radial-gradient(1200px 500px at 10% -10%, hsl(var(--primary) / .12), transparent 60%), radial-gradient(900px 400px at 100% 0%, hsl(210 90% 60% / .10), transparent 55%), hsl(var(--background)); }
+.sdm-admin [role="tablist"] { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); box-shadow: 0 6px 24px -14px rgb(0 0 0 / .25); border-radius: 1rem; padding: .4rem; gap: .25rem; }
+.sdm-admin [role="tab"] { border-radius: .7rem; padding: .5rem .8rem; gap: .4rem; transition: all .25s ease; }
+.sdm-admin [role="tab"] svg { transition: transform .25s ease; }
+.sdm-admin [role="tab"]:hover { background: hsl(var(--primary) / .08); }
+.sdm-admin [role="tab"]:hover svg { transform: scale(1.15) rotate(-4deg); }
+.sdm-admin [role="tab"][data-state="active"] { background: linear-gradient(135deg, hsl(var(--primary)), hsl(190 80% 42%)); color: #fff; box-shadow: 0 8px 18px -8px hsl(var(--primary) / .8); }
+.sdm-admin [role="tabpanel"] { animation: sdm-fade-up .4s ease both; }
+.sdm-admin .rounded-xl.border, .sdm-admin .rounded-lg.border { transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
+.sdm-admin .rounded-xl.border:hover { box-shadow: 0 10px 28px -16px rgb(0 0 0 / .35); border-color: hsl(var(--primary) / .35); }
+.sdm-admin tbody tr { transition: background-color .2s ease; }
+.sdm-admin tbody tr:hover { background: hsl(var(--primary) / .06); }
+.sdm-admin button { transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease; }
+.sdm-admin button:not(:disabled):active { transform: scale(.97); }
+.sdm-stat { animation: sdm-fade-up .5s ease both; transition: transform .25s ease, box-shadow .25s ease; }
+.sdm-stat:hover { transform: translateY(-3px); box-shadow: 0 14px 30px -16px hsl(var(--primary) / .6); }
+@media (prefers-reduced-motion: reduce) { .sdm-admin [role="tabpanel"], .sdm-stat { animation: none; } }
