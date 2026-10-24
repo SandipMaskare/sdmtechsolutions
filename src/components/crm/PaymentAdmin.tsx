@@ -17,7 +17,6 @@ import { useToast } from "@/hooks/use-toast";
 import { paymentMeta } from "@/pages/portal/PortalPayments";
 import { notifyUser, PORTAL_URL } from "@/lib/notify";
 import { fmtDate } from "@/lib/internProfile";
-import { RAZORPAY_LINK } from "@/components/portal/RazorpayButton";
 
 /** Admin-only: assign payments to interns, then verify / reject / waive them. */
 const PaymentAdmin = ({ userId }: { userId?: string }) => {
@@ -60,7 +59,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
     if (who?.email) {
       await notifyUser({
         email: who.email, name: who.full_name, subject: `Payment due: ${form.title.trim()}`,
-        lines: [`A payment has been assigned to you: ${form.title.trim()} — ₹${amount.toLocaleString("en-IN")}.`, form.instructions.trim() || "Open the Payments tab for details.", `Pay online: ${RAZORPAY_LINK}`, "After paying, enter your transaction (UTR) or Razorpay payment ID on the portal. You will get a receipt once it is verified."],
+        lines: [`A payment has been assigned to you: ${form.title.trim()} — ₹${amount.toLocaleString("en-IN")}.`, form.instructions.trim() || "Open the Payments tab for details.", `Pay online from your portal: ${PORTAL_URL}/payments (use the Razorpay Pay button or the QR shown there)`, "After paying, enter your transaction (UTR) or Razorpay payment ID on the portal. You will get a receipt once it is verified."],
         link: { label: "Open Payments", url: `${PORTAL_URL}/payments` },
       });
     }
@@ -91,7 +90,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
 
   const copyMessage = async (p: any) => {
     const who = names[p.user_id]?.split(" (")[0] || "Intern";
-    const msg = `Hello ${who},\n\nA payment of Rs. ${Number(p.amount).toLocaleString("en-IN")} for "${p.title}" has been assigned to you at SDM Technology.\n\nPay here: ${RAZORPAY_LINK}\n(You can also pay by UPI/QR from the Payments page in your intern portal.)\n\nAfter paying, log in to the portal > Payments and enter your Razorpay payment ID or UTR number. You will get a receipt once it is verified.\n\nThank you,\nSDM Technology`;
+    const msg = `Hello ${who},\n\nA payment of Rs. ${Number(p.amount).toLocaleString("en-IN")} for "${p.title}" has been assigned to you at SDM Technology.\n\nPay from the Payments page in your intern portal (press the Razorpay Pay button, or use the UPI/QR shown there): ${PORTAL_URL}/payments\n\nAfter paying, log in to the portal > Payments and enter your Razorpay payment ID or UTR number. You will get a receipt once it is verified.\n\nThank you,\nSDM Technology`;
     try { await navigator.clipboard.writeText(msg); toast({ title: "Payment message copied", description: "Paste it in WhatsApp or email." }); } catch { window.prompt("Copy this message:", msg); }
   };
 
