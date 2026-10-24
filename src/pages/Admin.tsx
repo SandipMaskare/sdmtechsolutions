@@ -25,6 +25,7 @@ import ContactSubmissions from "@/components/admin/ContactSubmissions";
 import ContentManager from "@/components/admin/ContentManager";
 import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import CompletionLetters from "@/components/admin/CompletionLetters";
+import CodeLab from "@/components/admin/CodeLab";
 import PeopleManager from "@/components/admin/PeopleManager";
 import AnalyticsSettings from "@/components/admin/AnalyticsSettings";
 import { Users, Sparkles } from "lucide-react";
@@ -190,6 +191,9 @@ const Admin = () => {
             <TabsTrigger value="analytics">
               <ClipboardList className="w-4 h-4" /> Analytics
             </TabsTrigger>
+            <TabsTrigger value="codelab">
+              <FileText className="w-4 h-4" /> Code Lab
+            </TabsTrigger>
             <TabsTrigger value="completion">
               <FileSignature className="w-4 h-4" /> Completion
             </TabsTrigger>
@@ -230,6 +234,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="analytics">
             <AnalyticsSettings />
+          </TabsContent>
+          <TabsContent value="codelab">
+            <CodeLab />
           </TabsContent>
           <TabsContent value="completion">
             <CompletionLetters />
