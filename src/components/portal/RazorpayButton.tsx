@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 // Razorpay hosted payment button. Loads Razorpay's official script into a form, exactly like the embed code.
-export const RAZORPAY_BUTTON_ID = "pl_Tr44Lp1XeUFd4z";
+export const RAZORPAY_BUTTON_ID = "plink_TrgZ0e1nsuRIzN,plink_TpG1HQt7hZ5QtS";
 export const RAZORPAY_LINK = "https://rzp.io/rzp/IHuF5oMm,https://rzp.io/rzp/e7ExPrY";
 
 const RazorpayButton = ({ buttonId = RAZORPAY_BUTTON_ID }: { buttonId?: string }) => {
