@@ -47,8 +47,10 @@ export const startAnalytics = async () => {
   trackPage();
 };
 
+/** Staff and signed-in areas are not counted, so your reports only show real website visitors. */
+const PRIVATE = /^\/(admin|crm|intern|employee|app|auth|profile|reset-password)(\/|$)/i;
 export const trackPage = () => {
   const w = window as any;
-  if (!loaded || !w.gtag) return;
+  if (!loaded || !w.gtag || PRIVATE.test(location.pathname)) return;
   w.gtag("event", "page_view", { page_path: location.pathname + location.search, page_title: document.title });
 };
