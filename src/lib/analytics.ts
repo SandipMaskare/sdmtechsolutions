@@ -31,6 +31,8 @@ const loadId = async () => {
  */
 export const startAnalytics = async () => {
   if (loaded) return;
+  const w0 = window as any;
+  if (w0.__sdmGA && w0.gtag) { loaded = true; return; } // tag already installed in index.html; CookieConsent sends the page view
   const id = await loadId();
   if (!id) return;
   loaded = true;
