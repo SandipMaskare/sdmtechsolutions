@@ -78,6 +78,18 @@ const PortalPayments = ({ kind }: { kind: PortalKind }) => {
           <h1 className="text-3xl font-bold font-display text-foreground">Payments</h1>
           <p className="text-muted-foreground mt-1">Payments (such as document verification) are set by the admin. Pay as instructed, then enter the transaction number here.</p>
         </div>
+        <Card className="border-primary/40">
+          <CardContent className="pt-6 space-y-3">
+            <p className="font-medium">Pay SDM Technology online (UPI, cards, net banking)</p>
+            <p className="text-sm text-muted-foreground">Use this only for a payment the admin has assigned to you. Pay the exact amount shown on your payment, then enter the Razorpay payment ID (starts with pay_) or UTR on that payment below.</p>
+            <RazorpayButton />
+            {methods.some((m) => m.qr_url) && (
+              <div className="flex flex-wrap gap-3 pt-1">
+                {methods.filter((m) => m.qr_url).map((m) => <div key={m.id} className="text-xs text-center"><img src={m.qr_url} alt={`${m.label} QR`} className="h-32 w-32 object-contain rounded border bg-white" />{m.label}</div>)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         {loading ? <div className="w-6 h-6 border-4 border-primary border-t-transparent rounded-full animate-spin" /> : rows.length === 0 ? (
           <Card><CardContent className="pt-6 text-muted-foreground flex items-center gap-3"><Wallet className="w-5 h-5" />Nothing to pay right now. If a payment is assigned to you, it will appear here.</CardContent></Card>
         ) : rows.map((p) => (
