@@ -1,3 +1,4 @@
+import FilePreviewButtons from "@/components/shared/FilePreviewButtons";
 import { useCallback, useEffect, useState } from "react";
 import { Plus, ExternalLink, Check, X, Ban, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -143,7 +144,7 @@ const PaymentAdmin = ({ userId }: { userId?: string }) => {
               <TableCell className="text-sm">
                 {p.method && <div className="text-xs text-muted-foreground">{p.method}</div>}
                 {p.reference || "—"}
-                {p.proof_url && <button className="ml-2 inline-flex items-center text-primary underline" onClick={() => proof(p.proof_url)}><ExternalLink className="w-3 h-3 mr-1" />proof</button>}
+                {p.proof_url && <span className="ml-2 inline-flex gap-1 align-middle"><FilePreviewButtons bucket="payment-proofs" path={p.proof_url} label="Proof" /></span>}
               </TableCell>
               <TableCell className="text-right whitespace-nowrap">
                 {p.status === "submitted" && <>
