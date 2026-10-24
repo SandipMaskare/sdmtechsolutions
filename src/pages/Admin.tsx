@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -27,7 +27,8 @@ import ApplicationsManager from "@/components/admin/ApplicationsManager";
 import CompletionLetters from "@/components/admin/CompletionLetters";
 import PeopleManager from "@/components/admin/PeopleManager";
 import AnalyticsSettings from "@/components/admin/AnalyticsSettings";
-import { Users } from "lucide-react";
+import { Users, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import EmailCenter from "@/components/admin/EmailCenter";
 import ChatInbox from "@/components/admin/ChatInbox";
 import OfferLetters from "@/components/admin/OfferLetters";
@@ -36,6 +37,43 @@ import PageNav from "@/components/PageNav";
 import sdmLogo from "@/assets/sdm-logo.webp";
 import AppTopBar from "@/components/app/AppTopBar";
 import { isAppMode } from "@/lib/appMode";
+
+const useCount = (to: number) => {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    let raf = 0; const t0 = performance.now();
+    const tick = (t: number) => { const k = Math.min(1, (t - t0) / 900); setN(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to]);
+  return n;
+};
+const Stat = ({ label, value, icon: Icon, tone, delay }: { label: string; value: number; icon: any; tone: string; delay: number }) => {
+  const n = useCount(value);
+  return (
+    <div className="sdm-stat rounded-2xl border border-border bg-card p-4 flex items-center gap-3" style={{ animationDelay: `${delay}ms` }}>
+      <div className={`h-11 w-11 rounded-xl flex items-center justify-center text-white ${tone}`}><Icon className="w-5 h-5" /></div>
+      <div><p className="text-2xl font-bold leading-none text-foreground">{n}</p><p className="text-xs text-muted-foreground mt-1">{label}</p></div>
+    </div>
+  );
+};
+const AdminStats = () => {
+  const [c, setC] = useState({ jobs: 0, apps: 0, newApps: 0, msgs: 0, people: 0 });
+  useEffect(() => {
+    const head = (t: string, f?: (q: any) => any) => { let q: any = (supabase as any).from(t).select("id", { count: "exact", head: true }); if (f) q = f(q); return q.then((r: any) => r.count || 0); };
+    Promise.all([head("jobs"), head("job_applications"), head("job_applications", (q) => q.eq("status", "pending")), head("contact_submissions"), head("profiles")])
+      .then(([jobs, apps, newApps, msgs, people]) => setC({ jobs, apps, newApps, msgs, people })).catch(() => {});
+  }, []);
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <Stat label="Jobs & internships" value={c.jobs} icon={Briefcase} tone="bg-gradient-to-br from-teal-500 to-emerald-600" delay={0} />
+      <Stat label="Applications" value={c.apps} icon={ClipboardList} tone="bg-gradient-to-br from-sky-500 to-blue-600" delay={70} />
+      <Stat label="New (unseen)" value={c.newApps} icon={Sparkles} tone="bg-gradient-to-br from-amber-500 to-orange-600" delay={140} />
+      <Stat label="Messages" value={c.msgs} icon={MessageSquare} tone="bg-gradient-to-br from-violet-500 to-purple-600" delay={210} />
+      <Stat label="People" value={c.people} icon={Users} tone="bg-gradient-to-br from-pink-500 to-rose-600" delay={280} />
+    </div>
+  );
+};
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -86,9 +124,9 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen sdm-admin">
       {isAppMode() && <AppTopBar />}
-      <header className={isAppMode() ? "hidden" : "bg-card border-b border-border sticky top-0 z-50"}>
+      <header className={isAppMode() ? "hidden" : "bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 shadow-sm"}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <PageNav />
@@ -116,6 +154,7 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8" style={isAppMode() ? { paddingTop: "calc(3.5rem + env(safe-area-inset-top) + 1rem)", paddingBottom: "6rem" } : undefined}>
+        <div className="mb-6"><h2 className="text-2xl font-bold text-foreground font-display">Welcome back 👋</h2><p className="text-sm text-muted-foreground mb-4">Here is what is happening on your website.</p><AdminStats /></div>
         <Tabs defaultValue={new URLSearchParams(window.location.search).get("tab") || "jobs"} className="space-y-6">
           <TabsList className="flex flex-wrap w-full max-w-6xl h-auto gap-1">
             <TabsTrigger value="jobs">
