@@ -4,6 +4,7 @@ import stamp from "@/assets/offerletter/stamp.png";
 import iso from "@/assets/offerletter/iso.png";
 import msme from "@/assets/offerletter/msme.png";
 import { OFFER_CSS, fmtDate, CONTACT_EMAIL } from "./offerLetterTemplate";
+import { qrDataUrl, verifyUrl } from "@/lib/qr";
 
 export { OFFER_CSS as COMPLETION_CSS };
 
@@ -49,6 +50,7 @@ export function completionHtml(it: CompletionItem): string {
 <p>During this period, ${p.sub} ${p.has} served as a <b>${role}</b> and ${p.has} displayed remarkable dedication, sincerity, and a strong desire to learn. ${p.Sub} ${p.has} exhibited exceptional coordination skills and effective communication abilities. Moreover, ${p.pos} attention to detail has been truly impressive.</p>
 <p>${p.Sub} ${p.has} consistently approached new assignments and challenges with enthusiasm, showcasing ${p.pos} passion for <b>${dom}</b>. ${p.Pos} commitment and willingness to acquire new knowledge and skills have been evident throughout ${p.pos} internship.</p>
 <p>We extend our best wishes to <b>${name}</b> for a successful future, and we have no doubt that ${p.sub} will continue to excel in the field of <b>${dom}</b>.</p></div>
+<div style="left:67px;top:728px;width:610px;height:58px;display:flex;align-items:center;gap:12px;font:12.5px/16px Lato,Arial,sans-serif;color:#111"><img src="${qrDataUrl(verifyUrl(it.id))}" style="position:static;width:58px;height:58px;border:1px solid #bbb"><div style="position:static"><b>Verify this letter online</b><br>Certificate ID: <b>${id}</b><br>Scan the QR code or visit sdmtechsolution.com/verify</div></div>
 <img class="ol-sig" src="${signature}" style="top:796px">
 <div class="ol-sgn" style="top:846px">Sincerely,<br>Authorized Signatory<br>Founder &amp; CEO<br>SDM Technology<br>Pvt. Ltd.</div>
 <img src="${stamp}" style="left:232px;top:822px;width:104px;height:104px">
@@ -83,3 +85,14 @@ export async function completionToPdf(it: CompletionItem): Promise<Blob> {
 }
 
 export const completionPdfName = (it: CompletionItem) => `Completion Letter - ${it.name.replace(/[\\/:*?"<>|]/g, "").trim()}.pdf`;
+
+/** Saves each letter in the verification register so the QR code on it opens a real record. */
+export async function registerCertificates(items: CompletionItem[]) {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const rows = items.map((it) => ({
+    cert_id: it.id.trim(), holder_name: it.name.trim(), role: it.role.trim(), college: it.college || null, course: it.course || null,
+    start_date: it.start, end_date: it.end, issued_on: it.ldate, kind: "completion", updated_at: new Date().toISOString(),
+  }));
+  const { error } = await (supabase as any).from("certificates").upsert(rows as any, { onConflict: "cert_id" });
+  if (error) throw new Error("Could not save to the verification register: " + error.message);
+}

@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { callFunction } from "@/lib/functions";
+import VerificationRegister from "./VerificationRegister";
 import { OFFER_FONTS, blobToBase64, fmtDate } from "./offerLetterTemplate";
-import { COMPLETION_CSS, CompletionItem, completionHtml, completionPdfName, completionToPdf } from "./completionLetterTemplate";
+import { COMPLETION_CSS, CompletionItem, completionHtml, completionPdfName, completionToPdf, registerCertificates } from "./completionLetterTemplate";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -68,7 +69,7 @@ const CompletionLetters = () => {
 
   const download = async (it: CompletionItem) => {
     setBusy(it.name);
-    try { save(await completionToPdf(it), completionPdfName(it)); }
+    try { await registerCertificates([it]); save(await completionToPdf(it), completionPdfName(it)); }
     catch (e: any) { toast({ title: "Could not create PDF", description: e?.message, variant: "destructive" }); }
     setBusy(null);
   };
@@ -77,6 +78,7 @@ const CompletionLetters = () => {
     try {
       const { default: JSZip } = await import("jszip");
       const z = new JSZip();
+      await registerCertificates(items);
       for (const it of items) z.file(completionPdfName(it), await completionToPdf(it));
       save(await z.generateAsync({ type: "blob" }), "SDM Completion Letters.zip");
     } catch (e: any) { toast({ title: "Could not create ZIP", description: e?.message, variant: "destructive" }); }
@@ -86,8 +88,9 @@ const CompletionLetters = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(it.email)) { setStatus((s) => ({ ...s, [it.name]: "No valid email" })); return false; }
     setStatus((s) => ({ ...s, [it.name]: "Sending…" }));
     try {
+      await registerCertificates([it]);
       const pdf = await blobToBase64(await completionToPdf(it));
-      const text = `Dear ${it.name},\n\nCongratulations on successfully completing your ${it.role} internship at SDM Technology (${fmtDate(it.start)} to ${fmtDate(it.end)}).\n\nPlease find your Internship Completion Letter (Intern ID: ${it.id}) attached.\n\nWe wish you all the best for your future. Please stay connected with us on LinkedIn for new opportunities.\n\nBest regards,\nHR Team – SDM Technology`;
+      const text = `Dear ${it.name},\n\nCongratulations on successfully completing your ${it.role} internship at SDM Technology (${fmtDate(it.start)} to ${fmtDate(it.end)}).\n\nPlease find your Internship Completion Letter (Intern ID: ${it.id}) attached. Anyone can confirm that it is genuine by scanning the QR code on the letter or by entering your Intern ID at https://www.sdmtechsolution.com/verify.\n\nWe wish you all the best for your future. Please stay connected with us on LinkedIn for new opportunities.\n\nBest regards,\nHR Team – SDM Technology`;
       const { error } = await callFunction("send-email", {
         to: it.email, subject, text, template: "intern",
         attachments: [{ filename: completionPdfName(it), content: pdf, contentType: "application/pdf" }],
@@ -160,7 +163,8 @@ const CompletionLetters = () => {
           </div>
         </div>
       </div>
-      <div ref={wrap} className="rounded-xl border border-border bg-card p-2 overflow-auto">
+      <div className="lg:col-start-1"><VerificationRegister /></div>
+      <div ref={wrap} className="rounded-xl border border-border bg-card p-2 overflow-auto lg:col-start-2 lg:row-start-1 lg:row-span-2 self-start">
         <div style={{ width: 744 * scale, height: 1052 * scale }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 744 }} dangerouslySetInnerHTML={{ __html: completionHtml(shown) }} />
         </div>
