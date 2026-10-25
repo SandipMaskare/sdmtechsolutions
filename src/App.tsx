@@ -42,6 +42,7 @@ const InternshipsPage = lazy(() => import("./pages/InternshipsPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
+const VerifyPage = lazy(() => import("./pages/VerifyPage"));
 const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 
 // Employee and intern portals
@@ -100,6 +101,7 @@ const App = () => (
               <Route path="/contact" element={isAppMode() ? <AppContact /> : <ContactPage />} />
               <Route path="/blog" element={isAppMode() ? <AppBlog /> : <BlogPage />} />
               <Route path="/blog/:slug" element={isAppMode() ? <AppBlogPost /> : <BlogPostPage />} />
+              <Route path="/verify" element={<VerifyPage />} />
               <Route path="/privacy-policy" element={<LegalPage kind="privacy" />} />
               <Route path="/terms" element={<LegalPage kind="terms" />} />
               <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
