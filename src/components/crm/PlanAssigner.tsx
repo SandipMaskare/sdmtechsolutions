@@ -21,7 +21,7 @@ const dueFor = (week: number, start?: string | null) => {
 };
 
 /** Pick a domain + week from the 8-week plan and assign its 3 tasks to the chosen people. */
-const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => void }) => {
+const PlanAssigner = ({ people, onDone, forceDomain, onChange }: { people: Assignee[]; onDone?: () => void; forceDomain?: string; onChange?: (s: { domainKey: string; week: string }) => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const guess = findDomain(people.find((p) => p.internship_domain)?.internship_domain)?.key;
@@ -32,12 +32,14 @@ const PlanAssigner = ({ people, onDone }: { people: Assignee[]; onDone?: () => v
   const [email, setEmail] = useState(true);
 
   useEffect(() => { if (guess) setDomainKey(guess); }, [guess]);
+  useEffect(() => { if (forceDomain && DOMAINS.some((d) => d.key === forceDomain)) setDomainKey(forceDomain); }, [forceDomain]);
+  useEffect(() => { onChange?.({ domainKey, week }); /* eslint-disable-next-line */ }, [domainKey, week]);
   useEffect(() => setPicked([true, true, true]), [week, domainKey]);
 
   const domain = useMemo(() => DOMAINS.find((d) => d.key === domainKey)!, [domainKey]);
   const weeks = week === "all" ? Array.from({ length: WEEKS }, (_, i) => i + 1) : [Number(week)];
   const refs = RESOURCES[domainKey] || [];
-  const maxCap = Math.max(...people.map((p) => planWeeks(p.internship_start, p.internship_end)));
+  const maxCap = people.length ? Math.max(...people.map((p) => planWeeks(p.internship_start, p.internship_end))) : WEEKS;
   useEffect(() => { if (week !== "all" && Number(week) > maxCap) setWeek("1"); }, [maxCap, week]);
 
   const assign = async () => {
