@@ -17,6 +17,8 @@ import ProgressPanel from "@/components/portal/ProgressPanel";
 import PerformanceCharts from "@/components/analytics/PerformanceCharts";
 import TaskManager from "@/components/crm/TaskManager";
 import PlanAssigner from "@/components/crm/PlanAssigner";
+import LetterAccessCard from "@/components/admin/LetterAccessCard";
+import AdminSetPassword from "@/components/crm/AdminSetPassword";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -134,6 +136,7 @@ const PersonProfilePage = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={openEdit}><Pencil className="w-4 h-4 mr-2" />Edit profile</Button>
+            {(isIntern || personRole === "employee") && <AdminSetPassword userId={p.user_id} name={p.full_name} email={p.email} />}
             {(isIntern || personRole === "employee") && <Button onClick={() => setAssignOpen(true)}>Assign from task library</Button>}
           </div>
         </div>
@@ -152,6 +155,8 @@ const PersonProfilePage = () => {
             Profile incomplete — missing: {miss.map((m) => m.label).join(", ")}. {isIntern && "The intern cannot open the portal until these are filled."}
           </CardContent></Card>
         )}
+
+        {isIntern && <LetterAccessCard profile={p} />}
 
         <Card>
           <CardHeader><CardTitle className="text-base">Profile details</CardTitle></CardHeader>
