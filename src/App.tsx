@@ -54,6 +54,7 @@ const PortalLearn = lazy(() => import("./pages/portal/PortalLearn"));
 const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
 const PortalAnalytics = lazy(() => import("./pages/portal/PortalAnalytics"));
 const PortalPayments = lazy(() => import("./pages/portal/PortalPayments"));
+const PortalLetters = lazy(() => import("./pages/portal/PortalLetters"));
 const PersonProfilePage = lazy(() => import("./pages/crm/PersonProfilePage"));
 const TaskLibraryPage = lazy(() => import("./pages/crm/TaskLibraryPage"));
 const PaymentsAdminPage = lazy(() => import("./pages/crm/PaymentsAdminPage"));
@@ -129,6 +130,7 @@ const App = () => (
               <Route path="/intern/analytics" element={<RequireRole role="intern"><PortalAnalytics kind="intern" /></RequireRole>} />
               <Route path="/intern/profile" element={<RequireRole role="intern"><PortalProfile kind="intern" /></RequireRole>} />
               <Route path="/intern/payments" element={<RequireRole role="intern"><PortalPayments kind="intern" /></RequireRole>} />
+              <Route path="/intern/letters" element={<RequireRole role="intern"><PortalLetters kind="intern" /></RequireRole>} />
               <Route path="/intern/learn" element={<RequireRole role="intern"><PortalLearn kind="intern" /></RequireRole>} />
               <Route path="/intern/submissions" element={<RequireRole role="intern"><PortalSubmissions kind="intern" /></RequireRole>} />
 
