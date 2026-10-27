@@ -11,7 +11,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Address",
-    content: "Gondia, Maharashtra 441911",
+    content: "Ward No. 3, Laxmi Chowk, Old Bus Stop, Murdada, Gondia, Maharashtra – 441911, India",
   },
   {
     icon: Phone,

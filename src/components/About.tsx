@@ -23,7 +23,7 @@ const checkpoints = [
   "Custom Software Development",
   "Web & Mobile Applications",
   "Cloud Solutions & Integration",
-  "24/7 Technical Support",
+  "Ongoing Technical Support",
 ];
 
 const About = () => {
@@ -46,9 +46,9 @@ const About = () => {
               <span className="text-primary"> Technology</span> Waits for None!
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              SDM Technology leads the tech sector in Gondia, Maharashtra,
-              delivering refined software solutions with advanced development
-              practices. We specialize in creating innovative digital
+              SDM Technology is a software company in Gondia, Maharashtra,
+              building web applications, mobile apps and business software
+              with modern development practices. We specialize in creating innovative digital
               experiences that transform how businesses operate and connect with
               their customers.
             </p>

@@ -108,7 +108,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-secondary-foreground/70 text-sm">
                 <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                Gondia, Maharashtra 441911
+                Ward No. 3, Laxmi Chowk, Old Bus Stop, Murdada, Gondia, Maharashtra – 441911
               </li>
               <li className="flex items-center gap-3 text-secondary-foreground/70 text-sm">
                 <Phone className="w-4 h-4 text-primary flex-shrink-0" />
