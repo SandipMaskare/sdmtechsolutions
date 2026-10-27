@@ -30,7 +30,7 @@ const AppContact = () => {
         <a href="tel:+917038523408" className="rounded-2xl bg-[#0f766e] text-white p-4 flex items-center gap-3 active:scale-[0.98] transition-transform"><Phone className="w-5 h-5" /><div><p className="text-sm font-semibold">Call us</p><p className="text-[11px] text-white/80">+91 70385 23408</p></div></a>
         <a href="mailto:sdmtechnologies.pvtltd@gmail.com" className="rounded-2xl bg-white border border-black/5 shadow-sm p-4 flex items-center gap-3 active:scale-[0.98] transition-transform"><Mail className="w-5 h-5 text-[#0f766e]" /><div><p className="text-sm font-semibold text-foreground">Email us</p><p className="text-[11px] text-muted-foreground">Reply in 1 day</p></div></a>
       </div>
-      <Card className="p-4 mt-3 flex items-center gap-3"><MapPin className="w-5 h-5 text-[#0f766e]" /><span className="text-sm text-foreground">Gondia, Maharashtra 441911</span></Card>
+      <Card className="p-4 mt-3 flex items-center gap-3"><MapPin className="w-5 h-5 text-[#0f766e]" /><span className="text-sm text-foreground">Ward No. 3, Laxmi Chowk, Old Bus Stop, Murdada, Gondia, Maharashtra – 441911</span></Card>
       <Heading>Send us a message</Heading>
       <Card className="p-4">
         <form onSubmit={submit} className="space-y-3">

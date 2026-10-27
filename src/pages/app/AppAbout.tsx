@@ -28,7 +28,7 @@ const AppAbout = () => (
     <Card className="p-4 space-y-3">
       {points.map((p) => <div key={p} className="flex gap-3 text-sm text-foreground/90"><CheckCircle2 className="w-5 h-5 text-[#0f766e] shrink-0" />{p}</div>)}
     </Card>
-    <Card className="p-4 mt-4 flex items-center gap-3"><MapPin className="w-5 h-5 text-[#0f766e]" /><span className="text-sm text-foreground">Gondia, Maharashtra 441911</span></Card>
+    <Card className="p-4 mt-4 flex items-center gap-3"><MapPin className="w-5 h-5 text-[#0f766e]" /><span className="text-sm text-foreground">Ward No. 3, Laxmi Chowk, Old Bus Stop, Murdada, Gondia, Maharashtra – 441911</span></Card>
     <Link to="/contact" className="mt-4 block text-center rounded-2xl bg-[#0f766e] text-white py-3.5 font-semibold active:scale-[0.98] transition-transform">Talk to us</Link>
   </AppShell>
 );
