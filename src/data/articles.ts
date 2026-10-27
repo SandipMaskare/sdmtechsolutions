@@ -1,4 +1,7 @@
 import { moreArticles } from "./moreArticles";
+import { guidesA } from "./guidesA";
+import { guidesB } from "./guidesB";
+import { guidesC } from "./guidesC";
 
 export interface ArticleSection {
   heading: string;
@@ -323,6 +326,7 @@ export const articles: Article[] = [
   },
 ];
 
-articles.push(...moreArticles);
+articles.push(...moreArticles, ...guidesA, ...guidesB, ...guidesC);
+articles.sort((a, b) => (a.date < b.date ? 1 : -1));
 
 export const getArticle = (slug?: string) => articles.find((a) => a.slug === slug);
