@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import About from "@/components/About";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import TechStack from "@/components/TechStack";
+import AboutExtra from "@/components/AboutExtra";
 import { motion } from "framer-motion";
 
 const AboutPage = () => {
@@ -36,6 +37,7 @@ const AboutPage = () => {
         </section>
 
         <About />
+        <AboutExtra />
         <TechStack />
         <WhyChooseUs />
       </main>

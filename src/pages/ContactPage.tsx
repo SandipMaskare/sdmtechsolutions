@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Contact from "@/components/Contact";
+import ContactExtra from "@/components/ContactExtra";
 import { motion } from "framer-motion";
 
 const ContactPage = () => {
@@ -70,6 +71,7 @@ const ContactPage = () => {
             </motion.div>
           </div>
         </section>
+        <ContactExtra />
       </main>
       <Footer />
     </div>
