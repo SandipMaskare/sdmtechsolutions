@@ -48,7 +48,7 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
       { to: `${c.base}/profile`, end: false, icon: UserCircle, label: "Profile" },
     ];
     return (
-      <div className="min-h-screen bg-muted/30 flex flex-col">
+      <div className="min-h-screen bg-muted/30 flex flex-col sdm-portal">
         <header className="sticky top-0 z-40 bg-[#0f766e] text-white" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <div className="flex items-center justify-between px-4 h-14">
             <Link to={c.base} className="flex items-center gap-2.5 min-w-0">
@@ -99,7 +99,7 @@ const PortalLayout = ({ kind, children }: { kind: PortalKind; children: ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/30 sdm-portal">
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
