@@ -248,3 +248,29 @@ html { scroll-behavior: smooth; }
 .sdm-stat { animation: sdm-fade-up .5s ease both; transition: transform .25s ease, box-shadow .25s ease; }
 .sdm-stat:hover { transform: translateY(-3px); box-shadow: 0 14px 30px -16px hsl(var(--primary) / .6); }
 @media (prefers-reduced-motion: reduce) { .sdm-admin [role="tabpanel"], .sdm-stat { animation: none; } }
+
+/* ---------- colour and motion polish ---------- */
+@keyframes sdm-grad { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes sdm-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes sdm-sheen { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(260%) skewX(-20deg); } }
+.sdm-progress { background: linear-gradient(90deg, #14b8a6, #3b82f6, #a855f7, #f59e0b, #14b8a6); background-size: 300% 100%; animation: sdm-grad 6s linear infinite; transition: width .1s linear; }
+.sdm-btt, .sdm-chip-active { background: linear-gradient(135deg, #0f766e, #2563eb, #7c3aed); background-size: 200% 200%; animation: sdm-grad 6s ease infinite; }
+.sdm-btt { transition: opacity .3s ease, transform .3s ease; }
+.sdm-faq { transition: box-shadow .25s ease, border-color .25s ease; }
+.sdm-faq:hover, .sdm-faq[data-state="open"] { border-color: hsl(var(--primary) / .5); box-shadow: 0 10px 26px -16px hsl(var(--primary) / .55); }
+.sdm-public h1 span.text-gradient, .sdm-public .text-gradient { background-size: 200% auto; animation: sdm-grad 7s ease infinite; }
+.sdm-public a[class*="bg-primary"], .sdm-public button[class*="bg-primary"] { position: relative; overflow: hidden; }
+.sdm-public a[class*="bg-primary"]::after, .sdm-public button[class*="bg-primary"]::after { content: ""; position: absolute; top: 0; left: 0; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgb(255 255 255 / .35), transparent); transform: translateX(-120%) skewX(-20deg); pointer-events: none; }
+.sdm-public a[class*="bg-primary"]:hover::after, .sdm-public button[class*="bg-primary"]:hover::after { animation: sdm-sheen .9s ease; }
+.sdm-public section:nth-of-type(even) .bg-card.border:hover { border-color: hsl(210 90% 55% / .5); }
+.sdm-public svg.lucide { transition: transform .3s ease; }
+.sdm-public .bg-card.border:hover svg.lucide { transform: scale(1.12) rotate(-4deg); }
+/* portals (interns, employees, CRM): colourful but calm */
+.sdm-portal main { background: radial-gradient(900px 380px at 0% -5%, hsl(var(--primary) / .12), transparent 60%), radial-gradient(700px 320px at 100% 0%, hsl(262 80% 60% / .08), transparent 60%); }
+.sdm-portal header.sticky { background: linear-gradient(120deg, #0f766e, #0e7490, #4338ca, #0f766e) !important; background-size: 300% 300%; animation: sdm-grad 14s ease infinite; }
+.sdm-portal main .bg-card, .sdm-portal main [class*="rounded-2xl"][class*="border"] { transition: transform .25s ease, box-shadow .25s ease; }
+.sdm-portal main .bg-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -16px hsl(var(--primary) / .5); }
+@media (prefers-reduced-motion: reduce) {
+  .sdm-progress, .sdm-btt, .sdm-chip-active, .sdm-portal header.sticky, .sdm-public .text-gradient { animation: none; }
+  .sdm-public a[class*="bg-primary"]:hover::after, .sdm-public button[class*="bg-primary"]:hover::after { animation: none; }
+}
