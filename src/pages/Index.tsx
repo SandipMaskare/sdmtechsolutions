@@ -11,6 +11,7 @@ const TechStack = lazy(() => import("@/components/TechStack"));
 const WhyChooseUs = lazy(() => import("@/components/WhyChooseUs"));
 const Testimonials = lazy(() => import("@/components/Testimonials"));
 const CareersTeaser = lazy(() => import("@/components/CareersTeaser"));
+const HomeFAQ = lazy(() => import("@/components/HomeFAQ"));
 const Contact = lazy(() => import("@/components/Contact"));
 const Footer = lazy(() => import("@/components/Footer"));
 
@@ -28,6 +29,7 @@ const Index = () => {
         <WhyChooseUs />
         <Testimonials />
         <CareersTeaser />
+        <HomeFAQ />
         <Contact />
         <Footer />
       </Suspense>

@@ -1,5 +1,6 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight, Search } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { articles } from "@/data/articles";
@@ -8,6 +9,10 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 const fmt = (d: string) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
 const BlogPage = () => {
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("All");
+  const cats = useMemo(() => ["All", ...Array.from(new Set(articles.map((a) => a.category)))], []);
+  const list = articles.filter((a) => (cat === "All" || a.category === cat) && (!q || `${a.title} ${a.excerpt}`.toLowerCase().includes(q.toLowerCase())));
   usePageMeta("Insights & Guides | SDM Technology", "Practical guides on software development, web and mobile apps, cloud, internships and careers from the SDM Technology team in Gondia.");
   return (
     <div className="min-h-screen">
@@ -23,8 +28,20 @@ const BlogPage = () => {
           </div>
         </section>
         <section className="py-14">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-wrap items-center gap-2 mb-8">
+              <div className="relative w-full sm:w-72 mr-2">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search articles" aria-label="Search articles" className="w-full h-10 rounded-full border border-border bg-card pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+              </div>
+              {cats.map((c) => (
+                <button key={c} onClick={() => setCat(c)} className={`px-3.5 py-1.5 rounded-full text-sm border transition-colors ${cat === c ? "sdm-chip-active text-white border-transparent" : "bg-card border-border text-muted-foreground hover:text-foreground"}`}>{c}</button>
+              ))}
+            </div>
+            {list.length === 0 && <p className="text-center text-muted-foreground py-10">No article matches your search.</p>}
+          </div>
           <div className="container mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((a) => (
+            {list.map((a) => (
               <Link key={a.slug} to={`/blog/${a.slug}`} className="group rounded-2xl border border-border bg-card p-6 hover:shadow-lg transition-shadow flex flex-col">
                 <span className="text-xs font-semibold text-primary uppercase tracking-wider">{a.category}</span>
                 <h2 className="text-xl font-bold text-foreground mt-2 mb-3 font-display group-hover:text-primary transition-colors">{a.title}</h2>

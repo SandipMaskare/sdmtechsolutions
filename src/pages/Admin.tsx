@@ -28,8 +28,9 @@ import CompletionLetters from "@/components/admin/CompletionLetters";
 import CodeLab from "@/components/admin/CodeLab";
 import InternLettersManager from "@/components/admin/InternLettersManager";
 import PeopleManager from "@/components/admin/PeopleManager";
+import BatchesManager from "@/components/admin/BatchesManager";
 import AnalyticsSettings from "@/components/admin/AnalyticsSettings";
-import { Users, Sparkles } from "lucide-react";
+import { Users, Sparkles, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import EmailCenter from "@/components/admin/EmailCenter";
 import ChatInbox from "@/components/admin/ChatInbox";
@@ -168,6 +169,9 @@ const Admin = () => {
             <TabsTrigger value="people">
               <Users className="w-4 h-4" /> People
             </TabsTrigger>
+            <TabsTrigger value="batches">
+              <Layers className="w-4 h-4" /> Batches
+            </TabsTrigger>
             <TabsTrigger value="services">
               <Settings className="w-4 h-4" /> Services
             </TabsTrigger>
@@ -214,6 +218,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="people">
             <PeopleManager />
+          </TabsContent>
+          <TabsContent value="batches">
+            <BatchesManager />
           </TabsContent>
           <TabsContent value="services">
             <ServicesManager />
