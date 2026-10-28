@@ -1,5 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import SiteExtras from "@/components/SiteExtras";
 
 const PRIVATE = ["/admin", "/crm", "/intern", "/employee", "/app", "/auth", "/enter", "/reset-password", "/forgot", "/profile", "/account"];
 
@@ -37,7 +38,7 @@ const MotionLayer = ({ children }: { children: ReactNode }) => {
     return () => { io.disconnect(); timers.forEach(clearTimeout); clearTimeout(failsafe); };
   }, [pathname, isPublic]);
 
-  return <div key={pathname} className="sdm-page">{children}</div>;
+  return <>{isPublic && <SiteExtras />}<div key={pathname} className="sdm-page">{children}</div></>;
 };
 
 export default MotionLayer;
