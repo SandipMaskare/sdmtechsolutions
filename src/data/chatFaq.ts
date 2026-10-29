@@ -19,7 +19,7 @@ export const FAQS: Faq[] = [
   { q: "Tell me about SDM Technology", keys: /about|who are you|company|sdm|team|founder/i,
     a: "SDM Technology is a technology and training company that builds digital products for businesses and trains students through real internships. Read more: /about" },
   { q: "Hello", keys: /^(hi|hello|hey|hii+|good (morning|afternoon|evening)|namaste)\b/i,
-    a: "Hello! 👋 I am the SDM Technology assistant. Pick a question below or type your own and I will help." },
+    a: "Hello! 👋 I am Kabir, the SDM Technology assistant. Pick a question below or type your own and I will help." },
   { q: "Thanks", keys: /^(thanks|thank you|ok thanks|great|got it)\b/i,
     a: "You're welcome! If you need anything else, just ask." },
 ];
