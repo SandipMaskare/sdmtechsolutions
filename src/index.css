@@ -330,7 +330,7 @@ html { scroll-behavior: smooth; }
 /* ---------- inner public pages: soft animated header band ---------- */
 .sdm-public main > section:first-child { position: relative; overflow: hidden; }
 .sdm-public main > section:first-child::before { content: ""; position: absolute; inset: -20%; z-index: 0; pointer-events: none; background: radial-gradient(520px 260px at 15% 30%, hsl(var(--primary) / .18), transparent 60%), radial-gradient(520px 260px at 85% 60%, hsl(262 80% 60% / .14), transparent 60%); animation: sdm-orb 18s ease-in-out infinite; }
-.sdm-public main > section:first-child > * { position: relative; z-index: 1; }
+.sdm-public main > section:first-child > *:not([data-bd]) { position: relative; z-index: 1; }
 
 /* ---------- intern / employee portals: smoother motion ---------- */
 @keyframes sdm-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -344,4 +344,11 @@ html { scroll-behavior: smooth; }
 .sdm-portal nav a[aria-current="page"], .sdm-portal nav a.active { position: relative; }
 @media (prefers-reduced-motion: reduce) {
   .sdm-orb, .sdm-auth-card, .sdm-auth-card button, .sdm-auth-card img, .sdm-public main > section:first-child::before, .sdm-portal main > *, .sdm-portal main [class*="grid"] > * { animation: none !important; }
+}
+
+/* the header now has a utility bar above the main bar on desktop */
+@media (min-width: 768px) {
+  .sdm-has-util main.pt-20 { padding-top: 7.75rem; }
+  .sdm-has-util main.pt-24 { padding-top: 8.75rem; }
+  .sdm-has-util main.pt-28 { padding-top: 9.75rem; }
 }
