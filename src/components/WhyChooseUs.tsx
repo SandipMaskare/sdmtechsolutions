@@ -2,48 +2,12 @@ import { motion } from "framer-motion";
 import { Award, Clock, Headphones, Zap, Shield, TrendingUp } from "lucide-react";
 
 const reasons = [
-  {
-    icon: Award,
-    title: "Expert Team",
-    description: "Skilled professionals with years of industry experience and cutting-edge expertise.",
-    stat: "50+",
-    statLabel: "Experts",
-  },
-  {
-    icon: Clock,
-    title: "On-Time Delivery",
-    description: "We respect deadlines and ensure timely delivery of every project milestone.",
-    stat: "98%",
-    statLabel: "On-Time",
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Support",
-    description: "Round-the-clock technical support to keep your systems running smoothly.",
-    stat: "24/7",
-    statLabel: "Available",
-  },
-  {
-    icon: Zap,
-    title: "Agile Approach",
-    description: "Flexible development methodology that adapts to your evolving needs.",
-    stat: "100%",
-    statLabel: "Agile",
-  },
-  {
-    icon: Shield,
-    title: "Secure Solutions",
-    description: "Enterprise-grade security measures to protect your data and applications.",
-    stat: "100%",
-    statLabel: "Secure",
-  },
-  {
-    icon: TrendingUp,
-    title: "Scalable Systems",
-    description: "Future-proof solutions designed to grow with your business demands.",
-    stat: "∞",
-    statLabel: "Scalable",
-  },
+  { icon: Award, title: "Mentor-led team", description: "Projects are planned and reviewed by experienced developers and mentors, and interns work under their guidance.", stat: "Mentored", statLabel: "Reviews" },
+  { icon: Clock, title: "Clear timelines", description: "We agree scope, milestones and dates before work starts and tell you early if anything changes.", stat: "Planned", statLabel: "Milestones" },
+  { icon: Headphones, title: "Responsive support", description: "Reach us Monday to Saturday, 9:00 to 18:00 by phone, email or the chat assistant, and we reply promptly.", stat: "Mon-Sat", statLabel: "9:00-18:00" },
+  { icon: Zap, title: "Step-by-step delivery", description: "We build in short cycles and show progress often, so you can adjust before it becomes costly.", stat: "Agile", statLabel: "Cycles" },
+  { icon: Shield, title: "Security basics built in", description: "Sign-in protection, access control and sensible data handling are part of every project.", stat: "Secure", statLabel: "By design" },
+  { icon: TrendingUp, title: "Room to grow", description: "We choose tools that let your product grow with your business instead of being rebuilt later.", stat: "Scalable", statLabel: "Choices" },
 ];
 
 const WhyChooseUs = () => {
@@ -78,7 +42,7 @@ const WhyChooseUs = () => {
             The <span className="text-primary">SDM</span> Advantage
           </h2>
           <p className="text-secondary-foreground/70 max-w-2xl mx-auto">
-            Discover what sets us apart and why businesses trust SDM Technology for their digital transformation journey.
+            How we work with clients and what you can expect when you build with SDM Technology.
           </p>
         </motion.div>
 
@@ -102,7 +66,7 @@ const WhyChooseUs = () => {
                   <reason.icon className="w-7 h-7 text-primary" />
                 </motion.div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-primary font-display">{reason.stat}</div>
+                  <div className="text-lg font-bold text-primary font-display">{reason.stat}</div>
                   <div className="text-xs text-secondary-foreground/60">{reason.statLabel}</div>
                 </div>
               </div>

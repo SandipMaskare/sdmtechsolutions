@@ -37,8 +37,8 @@ const Footer = () => {
               <img src={sdmLogo} alt="SDM Technology" className="h-12 mb-4" />
             </Link>
             <p className="text-secondary-foreground/70 text-sm leading-relaxed mb-4">
-              Follow Your Passion. SDM Technology leads innovation in software
-              development, delivering solutions that transform businesses.
+              Follow Your Passion. SDM Technology builds websites, apps and cloud
+              solutions for businesses and runs project-based internships from Gondia, Maharashtra.
             </p>
           </motion.div>
 

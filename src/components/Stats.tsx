@@ -1,11 +1,15 @@
 import { motion } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 
+import { articles } from "@/data/articles";
+import { DOMAINS } from "@/data/internshipPlan";
+
+// Only figures we can stand behind: delivered projects and interns as reported by the company, plus counts taken from this site.
 const stats = [
-  { value: 100, suffix: "+", label: "Projects Completed" },
-  { value: 50, suffix: "+", label: "Happy Clients" },
-  { value: 5, suffix: "+", label: "Years Experience" },
-  { value: 15, suffix: "+", label: "Expert Team" },
+  { value: 10, suffix: "+", label: "Projects Delivered" },
+  { value: 50, suffix: "+", label: "Interns Trained" },
+  { value: DOMAINS.length, suffix: "", label: "Internship Domains" },
+  { value: articles.length, suffix: "", label: "Guides Published" },
 ];
 
 const Counter = ({ value, suffix }: { value: number; suffix: string }) => {

@@ -61,10 +61,10 @@ const Hero = () => {
             </h1>
 
             <p className="text-lg text-secondary-foreground/70 mb-8 max-w-xl leading-relaxed">
-              SDM Technology leads the tech sector, delivering refined software
-              solutions with advanced development practices. We empower
-              businesses to thrive in the digital age with cutting-edge
-              technology and innovative solutions.
+              SDM Technology is a software company in Gondia, Maharashtra. We
+              build websites, web and mobile applications and cloud solutions
+              for businesses, and train students through project-based
+              internships with mentor review.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -101,10 +101,10 @@ const Hero = () => {
               transition={{ duration: 4, repeat: Infinity }}
             >
               <div className="text-3xl font-bold text-primary font-display">
-                100+
+                10+
               </div>
               <div className="text-muted-foreground text-sm">
-                Projects Completed
+                Projects Delivered
               </div>
             </motion.div>
 
@@ -116,7 +116,7 @@ const Hero = () => {
               <div className="text-3xl font-bold text-primary font-display">
                 50+
               </div>
-              <div className="text-muted-foreground text-sm">Happy Clients</div>
+              <div className="text-muted-foreground text-sm">Interns Trained</div>
             </motion.div>
 
             {/* Main visual */}

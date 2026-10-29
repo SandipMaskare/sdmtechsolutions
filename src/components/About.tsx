@@ -10,7 +10,7 @@ const features = [
   {
     icon: Lightbulb,
     title: "Innovative Approach",
-    description: "Cutting-edge technology meets creative problem-solving.",
+    description: "Modern technology applied with careful, creative problem-solving.",
   },
   {
     icon: Users,
