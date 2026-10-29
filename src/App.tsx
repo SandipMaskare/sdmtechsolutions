@@ -56,6 +56,8 @@ const PortalAnalytics = lazy(() => import("./pages/portal/PortalAnalytics"));
 const PortalPayments = lazy(() => import("./pages/portal/PortalPayments"));
 const PortalLetters = lazy(() => import("./pages/portal/PortalLetters"));
 const PersonProfilePage = lazy(() => import("./pages/crm/PersonProfilePage"));
+const BatchesPage = lazy(() => import("./pages/crm/BatchesPage"));
+const ManagePage = lazy(() => import("./pages/crm/ManagePage"));
 const TaskLibraryPage = lazy(() => import("./pages/crm/TaskLibraryPage"));
 const PaymentsAdminPage = lazy(() => import("./pages/crm/PaymentsAdminPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
@@ -138,6 +140,9 @@ const App = () => (
               <Route path="/crm/dashboard" element={<CRMDashboard />} />
               <Route path="/crm/employees" element={<EmployeesPage />} />
               <Route path="/crm/people/:userId" element={<PersonProfilePage />} />
+              <Route path="/crm/batches" element={<BatchesPage />} />
+              <Route path="/crm/applications" element={<ManagePage tool="applications" />} />
+              <Route path="/crm/manage/:tool" element={<ManagePage />} />
               <Route path="/crm/task-library" element={<TaskLibraryPage />} />
               <Route path="/crm/payments" element={<PaymentsAdminPage />} />
               <Route path="/crm/tasks" element={<TasksPage />} />

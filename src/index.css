@@ -267,10 +267,81 @@ html { scroll-behavior: smooth; }
 .sdm-public .bg-card.border:hover svg.lucide { transform: scale(1.12) rotate(-4deg); }
 /* portals (interns, employees, CRM): colourful but calm */
 .sdm-portal main { background: radial-gradient(900px 380px at 0% -5%, hsl(var(--primary) / .12), transparent 60%), radial-gradient(700px 320px at 100% 0%, hsl(262 80% 60% / .08), transparent 60%); }
-.sdm-portal header.sticky { background: linear-gradient(120deg, #0f766e, #0e7490, #4338ca, #0f766e) !important; background-size: 300% 300%; animation: sdm-grad 14s ease infinite; }
 .sdm-portal main .bg-card, .sdm-portal main [class*="rounded-2xl"][class*="border"] { transition: transform .25s ease, box-shadow .25s ease; }
 .sdm-portal main .bg-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -16px hsl(var(--primary) / .5); }
 @media (prefers-reduced-motion: reduce) {
-  .sdm-progress, .sdm-btt, .sdm-chip-active, .sdm-portal header.sticky, .sdm-public .text-gradient { animation: none; }
+  .sdm-progress, .sdm-btt, .sdm-chip-active, .sdm-public .text-gradient { animation: none; }
   .sdm-public a[class*="bg-primary"]:hover::after, .sdm-public button[class*="bg-primary"]:hover::after { animation: none; }
+}
+
+/* ---------- Kabir chat assistant ---------- */
+@keyframes sdm-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes sdm-blink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes sdm-ring { 0% { box-shadow: 0 0 0 0 rgb(20 184 166 / .55); } 70%,100% { box-shadow: 0 0 0 16px rgb(20 184 166 / 0); } }
+@keyframes sdm-pop { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes sdm-dot { 0%,80%,100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-4px); opacity: 1; } }
+.sdm-kabir-bob { animation: sdm-bob 2.6s ease-in-out infinite; }
+.sdm-kabir-eyes { transform-origin: 24px 22px; animation: sdm-blink 4.5s infinite; }
+.sdm-kabir-ant { animation: sdm-ring 2s infinite; border-radius: 9999px; }
+.sdm-kabir-launch { animation: sdm-ring 2.8s infinite; }
+.sdm-chat-in, .sdm-msg-in { animation: sdm-pop .3s ease both; }
+.sdm-dot { display: inline-block; width: 6px; height: 6px; border-radius: 9999px; background: hsl(var(--primary)); animation: sdm-dot 1s infinite; }
+@media (prefers-reduced-motion: reduce) { .sdm-kabir-bob, .sdm-kabir-eyes, .sdm-kabir-ant, .sdm-kabir-launch, .sdm-chat-in, .sdm-msg-in, .sdm-dot { animation: none; } }
+
+/* ---------- character animation + illustration motion ---------- */
+@keyframes sdm-char-in { from { opacity: 0; transform: translateY(.6em) rotate(6deg); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes sdm-caret { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+@keyframes sdm-type { from { width: 0; } to { width: var(--w, 160px); } }
+@keyframes sdm-spin { to { transform: rotate(360deg); } }
+@keyframes sdm-dash { to { stroke-dashoffset: -28; } }
+@keyframes sdm-pulse { 0%,100% { transform: scale(1); opacity: .12; } 50% { transform: scale(1.06); opacity: .2; } }
+@keyframes sdm-float-a { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+@keyframes sdm-float-b { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(10px) rotate(-2deg); } }
+.sdm-char { display: inline-block; opacity: 0; animation: sdm-char-in .55s cubic-bezier(.2,.8,.2,1) forwards; }
+.sdm-caret { display: inline-block; margin-left: 2px; color: hsl(var(--primary)); animation: sdm-caret 1s steps(1) infinite; font-weight: 300; }
+.sdm-type-line { width: 0; animation: sdm-type 2.2s steps(22) infinite alternate; }
+.sdm-spin { animation: sdm-spin 3s linear infinite; }
+.sdm-dash { stroke-dasharray: 6 8; animation: sdm-dash 1.2s linear infinite; }
+.sdm-pulse { transform-origin: 260px 190px; animation: sdm-pulse 4s ease-in-out infinite; }
+.sdm-float-a { animation: sdm-float-a 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.sdm-float-b { animation: sdm-float-b 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.sdm-float-c { animation: sdm-float-a 7s ease-in-out infinite reverse; transform-box: fill-box; transform-origin: center; }
+.sdm-float-slow { animation: sdm-float-a 8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.sdm-gradtext { background: linear-gradient(90deg, #5eead4, #38bdf8, #a78bfa, #5eead4); background-size: 250% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: sdm-grad 6s linear infinite; }
+.sdm-cta { background-image: linear-gradient(120deg, hsl(var(--primary)), #0ea5e9, #6366f1); background-size: 200% 200%; animation: sdm-grad 6s ease infinite; border: 0; color: #fff; }
+.sdm-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; }
+@media (prefers-reduced-motion: reduce) {
+  .sdm-char { opacity: 1; animation: none; }
+  .sdm-caret, .sdm-type-line, .sdm-spin, .sdm-dash, .sdm-pulse, .sdm-float-a, .sdm-float-b, .sdm-float-c, .sdm-float-slow, .sdm-gradtext, .sdm-cta { animation: none; }
+  .sdm-type-line { width: var(--w, 160px); }
+}
+
+/* ---------- login / sign-up pages ---------- */
+@keyframes sdm-orb { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-30px) scale(1.12); } 66% { transform: translate(-30px,30px) scale(.94); } }
+@keyframes sdm-card-in { from { opacity: 0; transform: translateY(24px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes sdm-border { 0%,100% { box-shadow: 0 0 0 1px hsl(var(--primary) / .25), 0 25px 60px -25px hsl(var(--primary) / .55); } 50% { box-shadow: 0 0 0 1px hsl(262 80% 60% / .35), 0 25px 60px -25px hsl(262 80% 60% / .5); } }
+.sdm-orb { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .32; animation: sdm-orb 15s ease-in-out infinite; }
+.sdm-auth-card { animation: sdm-card-in .6s cubic-bezier(.2,.8,.2,1) both, sdm-border 6s ease-in-out infinite; }
+.sdm-auth-card input { transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease; }
+.sdm-auth-card input:focus { box-shadow: 0 0 0 3px hsl(var(--primary) / .25); transform: translateY(-1px); }
+.sdm-auth-card button[type="submit"], .sdm-auth-card button.w-full { background-image: linear-gradient(120deg, hsl(var(--primary)), #0ea5e9, #6366f1); background-size: 200% 200%; animation: sdm-grad 6s ease infinite; color: #fff; border: 0; }
+.sdm-auth-card img { animation: sdm-float-a 6s ease-in-out infinite; }
+
+/* ---------- inner public pages: soft animated header band ---------- */
+.sdm-public main > section:first-child { position: relative; overflow: hidden; }
+.sdm-public main > section:first-child::before { content: ""; position: absolute; inset: -20%; z-index: 0; pointer-events: none; background: radial-gradient(520px 260px at 15% 30%, hsl(var(--primary) / .18), transparent 60%), radial-gradient(520px 260px at 85% 60%, hsl(262 80% 60% / .14), transparent 60%); animation: sdm-orb 18s ease-in-out infinite; }
+.sdm-public main > section:first-child > * { position: relative; z-index: 1; }
+
+/* ---------- intern / employee portals: smoother motion ---------- */
+@keyframes sdm-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.sdm-portal main > * { animation: sdm-rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.sdm-portal main > *:nth-child(2) { animation-delay: .06s; } .sdm-portal main > *:nth-child(3) { animation-delay: .12s; } .sdm-portal main > *:nth-child(4) { animation-delay: .18s; } .sdm-portal main > *:nth-child(n+5) { animation-delay: .24s; }
+.sdm-portal main [class*="grid"] > * { animation: sdm-rise .5s cubic-bezier(.2,.8,.2,1) both; }
+.sdm-portal main [class*="grid"] > *:nth-child(2) { animation-delay: .05s; } .sdm-portal main [class*="grid"] > *:nth-child(3) { animation-delay: .1s; } .sdm-portal main [class*="grid"] > *:nth-child(4) { animation-delay: .15s; } .sdm-portal main [class*="grid"] > *:nth-child(n+5) { animation-delay: .2s; }
+.sdm-portal [role="progressbar"] > div { transition: transform .9s cubic-bezier(.2,.8,.2,1), width .9s cubic-bezier(.2,.8,.2,1); }
+.sdm-portal a, .sdm-portal button { transition: background-color .2s ease, color .2s ease, box-shadow .25s ease, transform .15s ease; }
+.sdm-portal button:not(:disabled):active, .sdm-portal a[class*="rounded"]:active { transform: scale(.97); }
+.sdm-portal nav a[aria-current="page"], .sdm-portal nav a.active { position: relative; }
+@media (prefers-reduced-motion: reduce) {
+  .sdm-orb, .sdm-auth-card, .sdm-auth-card button, .sdm-auth-card img, .sdm-public main > section:first-child::before, .sdm-portal main > *, .sdm-portal main [class*="grid"] > * { animation: none !important; }
 }
