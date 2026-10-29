@@ -67,6 +67,7 @@ const TasksPage = () => {
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [batchList, setBatchList] = useState<{ id: string; name: string; members: string[] }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -93,6 +94,10 @@ const TasksPage = () => {
     if (role === "admin") {
       fetchTasks();
       fetchEmployees();
+      (async () => {
+        const [{ data: bs }, { data: ms }] = await Promise.all([(supabase as any).from("batches").select("id,name").order("start_date", { ascending: false }), (supabase as any).from("batch_members").select("batch_id,user_id")]);
+        setBatchList(((bs as any[]) || []).map((b) => ({ ...b, members: ((ms as any[]) || []).filter((m) => m.batch_id === b.id).map((m) => m.user_id) })));
+      })();
     }
   }, [role, loading, user, navigate]);
 
@@ -159,15 +164,22 @@ const TasksPage = () => {
   };
 
   const handleCreateTask = async () => {
-    const { error } = await supabase.from("tasks").insert({
+    const base = {
       title: formData.title,
       description: formData.description || null,
-      assigned_to: formData.assigned_to || null,
       assigned_by: user?.id,
       priority: formData.priority,
       deadline: formData.deadline || null,
       task_type: formData.task_type,
-    });
+    };
+    const batch = formData.assigned_to.startsWith("batch:") ? batchList.find((b) => b.id === formData.assigned_to.slice(6)) : null;
+    if (batch && batch.members.length === 0) {
+      toast({ title: "This batch has no members yet", variant: "destructive" });
+      return;
+    }
+    const { error } = batch
+      ? await supabase.from("tasks").insert(batch.members.map((uid) => ({ ...base, assigned_to: uid })))
+      : await supabase.from("tasks").insert({ ...base, assigned_to: formData.assigned_to || null });
 
     if (error) {
       toast({
@@ -180,7 +192,7 @@ const TasksPage = () => {
 
     toast({
       title: "Success",
-      description: "Task created successfully",
+      description: batch ? `Task assigned to all ${batch.members.length} members of ${batch.name}` : "Task created successfully",
     });
 
     setIsAddDialogOpen(false);
@@ -346,6 +358,9 @@ const TasksPage = () => {
                       <SelectValue placeholder="Select employee or intern" />
                     </SelectTrigger>
                     <SelectContent>
+                      {batchList.length > 0 && batchList.map((b) => (
+                        <SelectItem key={b.id} value={`batch:${b.id}`}>Whole batch: {b.name} ({b.members.length})</SelectItem>
+                      ))}
                       {employees.map((emp) => (
                         <SelectItem key={emp.user_id} value={emp.user_id}>
                           {emp.full_name}{emp.role === "intern" ? " (Intern)" : " (Employee)"}

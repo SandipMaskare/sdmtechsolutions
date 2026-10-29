@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Layers, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,10 @@ const TaskLibraryPage = () => {
   const [domainF, setDomainF] = useState<string>("all");
   const [plan, setPlan] = useState<{ domainKey: string; week: string }>({ domainKey: DOMAINS[0].key, week: "1" });
   const [forceDomain, setForceDomain] = useState<string | undefined>();
+  const [batches, setBatches] = useState<{ id: string; name: string; domain: string; start_date: string | null; end_date: string | null }[]>([]);
+  const [bm, setBm] = useState<Record<string, string>>({}); // user_id -> batch_id
+  const [batchF, setBatchF] = useState<string>("all"); // all | none | batch id
+  const [groupBy, setGroupBy] = useState<"domain" | "batch">("batch");
 
   const loadTasks = useCallback(async (ids: string[]) => {
     if (!ids.length) return;
@@ -44,13 +48,32 @@ const TaskLibraryPage = () => {
       const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["intern", "employee"]);
       const ids = (roles || []).map((r) => r.user_id);
       if (!ids.length) return;
+      const [{ data: bs }, { data: ms }] = await Promise.all([
+        (supabase as any).from("batches").select("id,name,domain,start_date,end_date").order("start_date", { ascending: false }),
+        (supabase as any).from("batch_members").select("batch_id,user_id"),
+      ]);
+      const bList = (bs as any[]) || [];
+      const memb: Record<string, string> = {};
+      ((ms as any[]) || []).forEach((x) => (memb[x.user_id] = x.batch_id));
+      setBatches(bList); setBm(memb);
       const { data: ps } = await supabase.from("profiles").select("user_id, full_name, email, internship_domain, internship_start, internship_end").in("user_id", ids);
       const rm: Record<string, string> = {};
       (roles || []).forEach((r) => (rm[r.user_id] = r.role));
-      setPeople((ps || []).map((p: any) => ({ ...p, role: rm[p.user_id] })).sort((a: any, b: any) => String(a.full_name).localeCompare(String(b.full_name))));
+      setPeople((ps || []).map((p: any) => {
+        const b = bList.find((x) => x.id === memb[p.user_id]);
+        // a batch supplies the dates and domain when the profile has none, so deadlines and week limits still work
+        return { ...p, role: rm[p.user_id], internship_start: p.internship_start || b?.start_date || null, internship_end: p.internship_end || b?.end_date || null, internship_domain: p.internship_domain || b?.domain || null };
+      }).sort((a: any, b: any) => String(a.full_name).localeCompare(String(b.full_name))));
       await loadTasks(ids);
       const pre = sp.get("user");
       if (pre) setSel({ [pre]: true });
+      const pb = sp.get("batch");
+      if (pb && bList.some((x) => x.id === pb)) {
+        const b = bList.find((x) => x.id === pb)!;
+        setSel(Object.fromEntries(Object.entries(memb).filter(([, v]) => v === pb).map(([k]) => [k, true])));
+        setBatchF(pb);
+        if (findDomain(b.domain)) setForceDomain(findDomain(b.domain)!.key);
+      }
     })();
   }, [role, loading, user]);
 
@@ -79,6 +102,8 @@ const TaskLibraryPage = () => {
   const shown = useMemo(() => people.filter((p) => {
     if (roleF !== "all" && p.role !== roleF) return false;
     if (domainF !== "all" && domKey(p) !== domainF) return false;
+    if (batchF === "none" && bm[p.user_id]) return false;
+    if (batchF !== "all" && batchF !== "none" && bm[p.user_id] !== batchF) return false;
     if (q && !`${p.full_name} ${p.email} ${p.internship_domain}`.toLowerCase().includes(q.toLowerCase())) return false;
     const e = info[p.user_id];
     if (statusF === "none") return !e;
@@ -86,16 +111,28 @@ const TaskLibraryPage = () => {
     if (statusF === "needs") return !hasWeek(p) && withinLength(p);
     if (statusF === "done") return hasWeek(p);
     return true;
-  }), [people, roleF, domainF, q, statusF, info, plan]);
+  }), [people, roleF, domainF, batchF, bm, q, statusF, info, plan]);
 
+  const NO_BATCH = "__nobatch";
   const groups = useMemo(() => {
-    const order = [...DOMAINS.map((d) => ({ key: d.key, label: d.label })), { key: NO_DOMAIN, label: "Domain not set" }];
+    if (groupBy === "batch") {
+      const order = [...batches.map((b) => ({ key: b.id, label: b.name, domain: b.domain })), { key: NO_BATCH, label: "Not in a batch", domain: "" }];
+      return order.map((g) => ({ ...g, list: shown.filter((p) => (bm[p.user_id] || NO_BATCH) === g.key) })).filter((g) => g.list.length);
+    }
+    const order = [...DOMAINS.map((d) => ({ key: d.key, label: d.label, domain: d.key })), { key: NO_DOMAIN, label: "Domain not set", domain: "" }];
     return order.map((g) => ({ ...g, list: shown.filter((p) => domKey(p) === g.key) })).filter((g) => g.list.length);
-  }, [shown]);
+  }, [shown, groupBy, batches, bm]);
 
-  const counts = (key: string) => {
-    const all = people.filter((p) => (roleF === "all" || p.role === roleF) && domKey(p) === key);
+  const counts = (g: { list: Assignee[] }) => {
+    const all = people.filter((p) => g.list.some((x) => x.user_id === p.user_id));
     return { n: all.length, with: all.filter((p) => info[p.user_id]).length };
+  };
+  const pickBatch = (id: string) => {
+    const b = batches.find((x) => x.id === id);
+    const members = people.filter((p) => bm[p.user_id] === id);
+    setSel(Object.fromEntries(members.map((p) => [p.user_id, true])));
+    setBatchF(id);
+    if (b && DOMAINS.some((d) => d.key === findDomain(b.domain)?.key)) setForceDomain(findDomain(b.domain)!.key);
   };
 
   const chosen = people.filter((p) => sel[p.user_id]);
@@ -118,6 +155,18 @@ const TaskLibraryPage = () => {
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-base">Who gets the tasks? ({chosen.length} picked)</CardTitle></CardHeader>
             <CardContent className="space-y-3">
+              <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-teal-500/10 to-indigo-500/10 p-3 space-y-2">
+                <p className="text-sm font-semibold flex items-center gap-1.5"><Layers className="w-4 h-4 text-primary" /> Assign to a whole batch</p>
+                {batches.length === 0 ? <p className="text-xs text-muted-foreground">No batches yet. Create one in Batches &amp; Interns, then come back.</p> : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {batches.map((b) => {
+                      const n = people.filter((p) => bm[p.user_id] === b.id).length;
+                      return <button key={b.id} onClick={() => pickBatch(b.id)} className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${batchF === b.id ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"}`}>{b.name} · {n}</button>;
+                    })}
+                  </div>
+                )}
+                <p className="text-[11px] text-muted-foreground">Tap a batch to pick every intern in it and set the domain, then press Assign on the right.</p>
+              </div>
               <div className="relative"><Search className="w-4 h-4 absolute left-2.5 top-2.5 text-muted-foreground" /><Input className="pl-8" placeholder="Search name, email or domain" value={q} onChange={(e) => setQ(e.target.value)} /></div>
               <div className="flex flex-wrap gap-1.5">
                 <Chip on={statusF === "all"} onClick={() => setStatusF("all")}>Everyone</Chip>
@@ -125,6 +174,13 @@ const TaskLibraryPage = () => {
                 <Chip on={statusF === "has"} onClick={() => setStatusF("has")}>Has tasks</Chip>
                 <Chip on={statusF === "needs"} onClick={() => setStatusF("needs")}>Needs {weekLabel}</Chip>
                 <Chip on={statusF === "done"} onClick={() => setStatusF("done")}>Already has {weekLabel}</Chip>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <Chip on={batchF === "all"} onClick={() => setBatchF("all")}>Any batch</Chip>
+                <Chip on={batchF === "none"} onClick={() => setBatchF("none")}>Not in a batch</Chip>
+                <span className="mx-1 text-muted-foreground">|</span>
+                <Chip on={groupBy === "batch"} onClick={() => setGroupBy("batch")}>Group by batch</Chip>
+                <Chip on={groupBy === "domain"} onClick={() => setGroupBy("domain")}>Group by domain</Chip>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {(["all", "intern", "employee"] as RoleF[]).map((r) => <Chip key={r} on={roleF === r} onClick={() => setRoleF(r)}>{r === "all" ? "Interns + employees" : r === "intern" ? "Interns" : "Employees"}</Chip>)}
@@ -142,13 +198,13 @@ const TaskLibraryPage = () => {
                 {people.length === 0 && <p className="text-sm text-muted-foreground">No interns or employees yet.</p>}
                 {people.length > 0 && groups.length === 0 && <p className="text-sm text-muted-foreground">Nobody matches these filters.</p>}
                 {groups.map((g) => {
-                  const c = counts(g.key);
+                  const c = counts(g);
                   const allOn = g.list.every((p) => sel[p.user_id]);
                   return (
                     <div key={g.key} className="rounded-lg border border-border">
                       <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-t-lg">
                         <Checkbox checked={allOn} onCheckedChange={(v) => setMany(g.list, !!v)} />
-                        <button className="flex-1 text-left text-sm font-semibold" onClick={() => g.key !== NO_DOMAIN && setForceDomain(g.key)}>{g.label}</button>
+                        <button className="flex-1 text-left text-sm font-semibold" onClick={() => { const dk = findDomain(g.domain)?.key; if (dk) setForceDomain(dk); }}>{g.label}</button>
                         <span className="text-xs text-muted-foreground">{c.n} people · {c.with} with tasks · {c.n - c.with} without</span>
                       </div>
                       <div className="divide-y divide-border">
