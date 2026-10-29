@@ -15,6 +15,8 @@ interface Job {
   type: string;
   description: string | null;
   requirements: string[] | null;
+  kind?: string | null;
+  duration?: string | null;
 }
 
 const JobDetailPage = () => {
@@ -57,7 +59,7 @@ const JobDetailPage = () => {
                 </h1>
                 <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-primary" />{job.location}</span>
-                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-primary" />{job.type}</span>
+                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-primary" />{job.kind === "internship" && job.duration ? `${job.duration} internship` : job.type}</span>
                   <span className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs font-medium">{job.department}</span>
                 </div>
               </>
