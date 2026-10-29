@@ -12,12 +12,14 @@ import {
   LogOut,
   Building2,
   Library,
+  Layers,
   Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import sdmLogo from "@/assets/sdm-logo.webp";
+import { ADMIN_TOOLS } from "./adminTools";
 
 interface CRMSidebarProps {
   userRole: string;
@@ -91,6 +93,24 @@ const CRMSidebar = ({ userRole }: CRMSidebarProps) => {
             {!collapsed && <span className="font-medium">{link.label}</span>}
           </NavLink>
         ))}
+        {userRole === "admin" && (
+          <>
+            {(["Hiring", "People", "Communication", "Letters", "Website"] as const).map((g) => (
+              <div key={g} className="pt-3">
+                {!collapsed && <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{g}</p>}
+                {collapsed && <div className="mx-3 my-1 border-t border-border" />}
+                {ADMIN_TOOLS.filter((t) => t.group === g).map((t) => (
+                  <NavLink key={t.key} to={t.to} title={t.label}
+                    className={({ isActive }) => cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm", "hover:bg-accent hover:text-accent-foreground hover:translate-x-0.5",
+                      isActive ? "bg-gradient-to-r from-primary to-teal-500 text-primary-foreground shadow" : "text-muted-foreground")}>
+                    <t.icon className="h-4 w-4 flex-shrink-0" />
+                    {!collapsed && <span className="font-medium truncate">{t.label}</span>}
+                  </NavLink>
+                ))}
+              </div>
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Bottom section */}
