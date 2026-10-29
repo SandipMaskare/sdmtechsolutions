@@ -1,3 +1,4 @@
+import AuthBackdrop from "@/components/AuthBackdrop";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -64,10 +65,11 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+    <div className="relative overflow-hidden min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+      <AuthBackdrop />
       <PageNav floating />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
-        <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
+        <div className="sdm-auth-card relative bg-card/95 backdrop-blur border border-border rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-6">
             <img src={sdmLogo} alt="SDM Technology" className="h-14 mx-auto mb-4" width={56} height={56} />
             <h1 className="text-2xl font-bold text-foreground font-display">Choose a new password</h1>

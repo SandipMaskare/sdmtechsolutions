@@ -145,6 +145,10 @@ const Admin = () => {
             <span className="text-sm text-muted-foreground hidden sm:block">
               {user?.email}
             </span>
+            <Button size="sm" onClick={() => navigate("/crm/dashboard")}>
+              <Layers className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/")}>
               <ChevronLeft className="w-4 h-4 mr-2" />
               Site
