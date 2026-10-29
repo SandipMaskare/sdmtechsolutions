@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BarChart3, Briefcase, ClipboardList, FileText, Inbox, LayoutDashboard, Library, Mail, MessageSquare, Send, Settings, Shield, Sparkles, TrendingUp, Users, Wallet, LogOut, Compass, ChevronRight } from "lucide-react";
+import { BarChart3, Briefcase, ClipboardList, FileText, Inbox, LayoutDashboard, Layers, Library, Mail, MessageSquare, Send, Settings, Shield, Sparkles, TrendingUp, Users, Wallet, LogOut, Compass, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { homePath } from "@/lib/roles";
@@ -9,6 +9,7 @@ import { AppShell, Card, Heading, Spinner } from "@/components/app/AppShell";
 const crm = [
   { to: "/crm/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/crm/employees", icon: Users, label: "People" },
+  { to: "/crm/batches", icon: Layers, label: "Batches" },
   { to: "/crm/tasks", icon: ClipboardList, label: "Tasks" },
   { to: "/crm/submissions", icon: Send, label: "Submissions" },
   { to: "/crm/payments", icon: Wallet, label: "Payments" },
