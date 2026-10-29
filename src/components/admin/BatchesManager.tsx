@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, BellRing, CheckCircle2, ExternalLink, Layers, Loader2, Pencil, Plus, Search, Sparkles, Trash2, Users, X } from "lucide-react";
+import { AlertTriangle, BellRing, ClipboardList, CheckCircle2, ExternalLink, Layers, Loader2, Pencil, Plus, Search, Sparkles, Trash2, Users, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,6 +224,7 @@ const BatchesManager = () => {
                   </div>
                   <div className="flex flex-wrap gap-2 mt-auto">
                     <Button size="sm" onClick={() => setOpenBatch(b.id)}>Open</Button>
+                    <Button size="sm" variant="secondary" asChild><Link to={`/crm/task-library?batch=${b.id}`}><ClipboardList className="w-3.5 h-3.5 mr-1" /> Assign tasks</Link></Button>
                     <Button size="sm" variant="outline" onClick={() => autoFill(b)}><Sparkles className="w-3.5 h-3.5 mr-1" /> Auto-add</Button>
                     <Button size="sm" variant="outline" onClick={() => setEditBatch(b)}><Pencil className="w-3.5 h-3.5" /></Button>
                     <Button size="sm" variant="outline" onClick={() => deleteBatch(b)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
