@@ -1,28 +1,28 @@
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CharReveal, Typewriter } from "@/components/AnimatedText";
+import { DevScene } from "@/components/Illustrations";
 
-const words = ["Innovation", "Technology", "Excellence", "Solutions"];
+const words = ["Websites", "Mobile Apps", "Software", "Cloud Solutions", "Careers"];
+const lowMotion = () => typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || (navigator as any).connection?.saveData);
 
 const Hero = () => {
-  const [currentWord, setCurrentWord] = useState(0);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <section
       id="home"
       className="relative min-h-screen flex items-center pt-32 md:pt-40 pb-20 overflow-hidden bg-gradient-hero"
     >
-      {/* Animated background elements */}
+      {/* Looping background video (skipped for reduced motion / data saver) */}
+      {!lowMotion() ? (
+        <video className="sdm-hero-video" autoPlay muted loop playsInline preload="metadata" poster="/media/poster.jpg" aria-hidden="true">
+          <source src="/media/hero-loop.mp4" type="video/mp4" />
+        </video>
+      ) : <img className="sdm-hero-video" src="/media/poster.jpg" alt="" aria-hidden="true" />}
+      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(210_60%_12%/.92)] via-[hsl(210_60%_14%/.7)] to-[hsl(210_60%_14%/.35)]" />
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"
@@ -54,18 +54,9 @@ const Hero = () => {
             </motion.span>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-secondary-foreground leading-tight font-display mb-6">
-              Transforming Ideas Into
-              <span className="block mt-2">
-                Digital{" "}
-                <motion.span
-                  key={currentWord}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="text-primary"
-                >
-                  {words[currentWord]}
-                </motion.span>
+              <CharReveal text="Transforming Ideas Into" delay={250} />
+              <span className="block mt-2 min-h-[1.2em]">
+                Digital <Typewriter phrases={words} className="sdm-gradtext" />
               </span>
             </h1>
 
@@ -80,7 +71,7 @@ const Hero = () => {
               <Button
                 size="lg"
                 onClick={() => navigate("/contact")}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 group"
+                className="sdm-cta hover:opacity-95 font-semibold px-8 group shadow-lg shadow-teal-500/30"
               >
                 Get Started
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -105,7 +96,7 @@ const Hero = () => {
           >
             {/* Stats cards */}
             <motion.div
-              className="absolute top-10 right-0 bg-card/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-border"
+              className="absolute top-2 right-0 z-20 bg-card/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-border"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity }}
             >
@@ -118,7 +109,7 @@ const Hero = () => {
             </motion.div>
 
             <motion.div
-              className="absolute bottom-20 left-0 bg-card/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-border"
+              className="absolute bottom-6 left-0 z-20 bg-card/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-border"
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 5, repeat: Infinity }}
             >
@@ -129,16 +120,8 @@ const Hero = () => {
             </motion.div>
 
             {/* Main visual */}
-            <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl flex items-center justify-center border border-primary/20">
-              <motion.div
-                className="w-48 h-48 bg-primary/30 rounded-full flex items-center justify-center"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              >
-                <div className="w-32 h-32 bg-primary/50 rounded-full flex items-center justify-center">
-                  <div className="w-16 h-16 bg-primary rounded-full animate-pulse-glow" />
-                </div>
-              </motion.div>
+            <div className="w-full h-[26rem] flex items-center justify-center px-10">
+              <DevScene className="w-full h-full drop-shadow-2xl" />
             </div>
           </motion.div>
         </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { MessageCircle, Send, X, Loader2 } from "lucide-react";
+import { Send, X, Loader2 } from "lucide-react";
+import KabirAvatar from "@/components/KabirAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +28,8 @@ const HIDDEN_PREFIXES = ["/admin", "/app/admin", "/crm", "/auth", "/intern/login
 const ChatWidget = () => {
   const { pathname } = useLocation();
   const [enabled, setEnabled] = useState(true);
-  const [welcome, setWelcome] = useState("Hi! 👋 Ask us anything about our services, careers or internships.");
+  const [welcome, setWelcome] = useState("Hi! 👋 I am Kabir, the SDM Technology assistant. Ask me anything about our services, careers or internships.");
+  const [nudge, setNudge] = useState(false);
   const [open, setOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(readSession());
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -47,7 +49,7 @@ const ChatWidget = () => {
       .then(({ data }) => {
         (data ?? []).forEach((r) => {
           if (r.section_key === "chat_enabled" && (r.content ?? "").trim().toLowerCase() === "no") setEnabled(false);
-          if (r.section_key === "chat_welcome_message" && r.content?.trim()) setWelcome(r.content.trim());
+          if (r.section_key === "chat_welcome_message" && r.content?.trim() && !/^Hi! 👋 Ask us anything/.test(r.content.trim())) setWelcome(r.content.trim());
         });
       });
   }, []);
@@ -77,6 +79,11 @@ const ChatWidget = () => {
     const t = setInterval(poll, 4000);
     return () => clearInterval(t);
   }, [open, sessionId, poll]);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setNudge(true), 4500), t2 = setTimeout(() => setNudge(false), 14000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, open]);
 
@@ -115,14 +122,17 @@ const ChatWidget = () => {
       {open && (
         <div
           role="dialog"
-          aria-label="Chat support"
+          aria-label="Chat with Kabir"
           style={isAppMode() ? { bottom: "calc(9rem + var(--sdm-ad-h, 0px))" } : undefined}
-          className="fixed bottom-24 right-4 z-50 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+          className="sdm-chat-in fixed bottom-24 right-4 z-50 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
         >
-          <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
-            <div>
-              <p className="font-semibold leading-tight">SDM Technology Support</p>
-              <p className="text-xs opacity-90">We usually reply within a few minutes</p>
+          <div className="flex items-center justify-between bg-gradient-to-r from-teal-600 via-cyan-600 to-indigo-600 px-4 py-3 text-white">
+            <div className="flex items-center gap-3">
+              <KabirAvatar size={40} />
+              <div>
+                <p className="font-semibold leading-tight">Kabir</p>
+                <p className="text-xs opacity-90 flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" /> SDM Technology assistant · online</p>
+              </div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Close chat" className="rounded p-1 hover:bg-white/20">
               <X className="h-5 w-5" />
@@ -139,7 +149,7 @@ const ChatWidget = () => {
               </div>
             )}
             {messages.map((m) => (
-              <div key={m.id} className={m.sender === "visitor" ? "flex justify-end" : "flex justify-start"}>
+              <div key={m.id} className={`sdm-msg-in ${m.sender === "visitor" ? "flex justify-end" : "flex justify-start"}`}>
                 <div
                   className={
                     m.sender === "visitor"
@@ -148,6 +158,7 @@ const ChatWidget = () => {
                   }
                 >
                   {m.sender === "admin" && <span className="mb-0.5 block text-xs font-semibold text-primary">SDM Team</span>}
+                  {m.sender === "bot" && <span className="mb-0.5 block text-xs font-semibold text-primary">Kabir</span>}
                   {linkify(m.body)}
                 </div>
               </div>
@@ -159,25 +170,36 @@ const ChatWidget = () => {
                 ))}
               </div>
             )}
+            {sending && (
+              <div className="flex justify-start"><div className="rounded-2xl rounded-tl-sm bg-card px-3 py-2 shadow-sm flex items-center gap-1" aria-label="Kabir is typing">
+                <span className="sdm-dot" /><span className="sdm-dot" style={{ animationDelay: ".15s" }} /><span className="sdm-dot" style={{ animationDelay: ".3s" }} />
+              </div></div>
+            )}
             <div ref={endRef} />
           </div>
 
           {error && <p className="bg-destructive/10 px-4 py-2 text-xs text-destructive">{error}</p>}
           <form onSubmit={(e) => send(e)} className="flex gap-2 border-t border-border bg-background p-3">
-            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type your message…" maxLength={1000} aria-label="Message" />
+            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Ask Kabir anything…" maxLength={1000} aria-label="Message" />
             <Button type="submit" size="icon" disabled={sending || !text.trim()} aria-label="Send">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </form>
         </div>
       )}
+      {!open && nudge && (
+        <div style={isAppMode() ? { bottom: "calc(8.6rem + var(--sdm-ad-h, 0px))" } : undefined} className="sdm-msg-in fixed bottom-[5.3rem] right-4 z-50 max-w-[220px] rounded-2xl rounded-br-sm bg-card border border-border px-3 py-2 text-sm text-foreground shadow-xl">
+          Hi! I'm <b>Kabir</b> 👋 Need help?
+          <button onClick={() => setNudge(false)} aria-label="Dismiss" className="absolute -top-2 -left-2 h-5 w-5 rounded-full bg-muted text-muted-foreground text-xs leading-5 text-center">×</button>
+        </div>
+      )}
       <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Close chat" : "Open chat support"}
+        onClick={() => { setOpen((o) => !o); setNudge(false); }}
+        aria-label={open ? "Close chat" : "Chat with Kabir"}
         style={isAppMode() ? { bottom: "calc(5.25rem + var(--sdm-ad-h, 0px))" } : undefined}
-        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="sdm-kabir-launch fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-xl ring-2 ring-teal-500/40 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
-        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        {open ? <X className="h-6 w-6 text-foreground" /> : <KabirAvatar size={48} pulse />}
       </button>
     </>
   );
