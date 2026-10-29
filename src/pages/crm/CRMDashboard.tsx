@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Layers, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { ADMIN_TOOLS } from "@/components/crm/adminTools";
 import { 
   Users, 
   ClipboardList, 
@@ -125,6 +127,34 @@ const CRMDashboard = () => {
             {role === "admin" ? "Admin Dashboard" : "Employee Dashboard"} • {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
+
+
+        {role === "admin" && (
+          <div className="space-y-4">
+            <Link to="/crm/batches" className="block rounded-2xl p-4 text-white bg-gradient-to-r from-teal-600 via-cyan-600 to-indigo-600 shadow-sm hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3">
+                <Layers className="w-6 h-6 shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold">Batches &amp; interns</p>
+                  <p className="text-sm opacity-90">Group interns by domain and dates, manage every profile in one place and send profile reminders.</p>
+                </div>
+                <ArrowRight className="w-5 h-5 shrink-0" />
+              </div>
+            </Link>
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-2">Everything in one place</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {ADMIN_TOOLS.map((t, i) => (
+                  <Link key={t.key} to={t.to} style={{ animationDelay: `${i * 35}ms` }}
+                    className="sdm-stat group flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/50">
+                    <span className="h-9 w-9 rounded-lg flex items-center justify-center text-white shrink-0 bg-gradient-to-br from-teal-500 to-indigo-500 group-hover:from-indigo-500 group-hover:to-fuchsia-500 transition-all"><t.icon className="w-4 h-4" /></span>
+                    <span className="text-sm font-medium text-foreground leading-tight">{t.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
