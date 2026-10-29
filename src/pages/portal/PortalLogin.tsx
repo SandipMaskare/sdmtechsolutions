@@ -1,3 +1,4 @@
+import AuthBackdrop from "@/components/AuthBackdrop";
 import PageNav from "@/components/PageNav";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -83,10 +84,11 @@ const PortalLogin = ({ kind }: { kind: Kind }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4" style={appMode ? { paddingTop: "calc(env(safe-area-inset-top) + 1rem)", paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" } : undefined}>
+    <div className="relative overflow-hidden min-h-screen bg-gradient-hero flex items-center justify-center p-4" style={appMode ? { paddingTop: "calc(env(safe-area-inset-top) + 1rem)", paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" } : undefined}>
+      <AuthBackdrop />
       {!appMode && <PageNav floating />}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
-        <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
+        <div className="sdm-auth-card relative bg-card/95 backdrop-blur border border-border rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
             {appMode ? (
               <img src={sdmLogo} alt="SDM Technology" className="h-14 mx-auto mb-5" width={56} height={56} />
