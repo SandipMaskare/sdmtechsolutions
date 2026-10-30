@@ -49,10 +49,10 @@ const TaskLibraryPage = () => {
       const ids = (roles || []).map((r) => r.user_id);
       if (!ids.length) return;
       const [{ data: bs }, { data: ms }] = await Promise.all([
-        (supabase as any).from("batches").select("id,name,domain,start_date,end_date").order("start_date", { ascending: false }),
+        (supabase as any).from("batches").select("id,name,domain,start_date,end_date").order("start_date", { ascending: true }),
         (supabase as any).from("batch_members").select("batch_id,user_id"),
       ]);
-      const bList = (bs as any[]) || [];
+      const bList = ((bs as any[]) || []).slice().sort((a, b) => String(a.start_date || "9999").localeCompare(String(b.start_date || "9999")) || String(a.end_date || "").localeCompare(String(b.end_date || "")));
       const memb: Record<string, string> = {};
       ((ms as any[]) || []).forEach((x) => (memb[x.user_id] = x.batch_id));
       setBatches(bList); setBm(memb);
@@ -114,9 +114,11 @@ const TaskLibraryPage = () => {
   }), [people, roleF, domainF, batchF, bm, q, statusF, info, plan]);
 
   const NO_BATCH = "__nobatch";
+  const fd = (d: string | null) => (d ? new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "?");
+  const bLabel = (b: { name: string; start_date: string | null; end_date: string | null }) => `${b.name} · ${fd(b.start_date)} – ${fd(b.end_date)}`;
   const groups = useMemo(() => {
     if (groupBy === "batch") {
-      const order = [...batches.map((b) => ({ key: b.id, label: b.name, domain: b.domain })), { key: NO_BATCH, label: "Not in a batch", domain: "" }];
+      const order = [...batches.map((b) => ({ key: b.id, label: bLabel(b), domain: b.domain })), { key: NO_BATCH, label: "Not in a batch", domain: "" }];
       return order.map((g) => ({ ...g, list: shown.filter((p) => (bm[p.user_id] || NO_BATCH) === g.key) })).filter((g) => g.list.length);
     }
     const order = [...DOMAINS.map((d) => ({ key: d.key, label: d.label, domain: d.key })), { key: NO_DOMAIN, label: "Domain not set", domain: "" }];
@@ -161,7 +163,7 @@ const TaskLibraryPage = () => {
                   <div className="flex flex-wrap gap-1.5">
                     {batches.map((b) => {
                       const n = people.filter((p) => bm[p.user_id] === b.id).length;
-                      return <button key={b.id} onClick={() => pickBatch(b.id)} className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${batchF === b.id ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"}`}>{b.name} · {n}</button>;
+                      return <button key={b.id} onClick={() => pickBatch(b.id)} className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${batchF === b.id ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"}`}>{bLabel(b)} · {n}</button>;
                     })}
                   </div>
                 )}
