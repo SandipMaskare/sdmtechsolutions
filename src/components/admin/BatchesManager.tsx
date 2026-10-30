@@ -50,7 +50,7 @@ const BatchesManager = () => {
     const ids = (roles || []).map((r: any) => r.user_id);
     const [ps, bs, ms, rs] = await Promise.all([
       ids.length ? supabase.from("profiles").select("user_id, full_name, email, phone, college, city, intern_id, internship_domain, internship_mode, internship_start, internship_end, linkedin_url, follows_company, offer_role").in("user_id", ids) : Promise.resolve({ data: [] as any[] }),
-      db.from("batches").select("*").order("start_date", { ascending: false }),
+      db.from("batches").select("*").order("start_date", { ascending: true }),
       db.from("batch_members").select("batch_id, user_id"),
       db.from("profile_reminders").select("user_id, sent_at").order("sent_at", { ascending: false }).limit(2000),
     ]);
