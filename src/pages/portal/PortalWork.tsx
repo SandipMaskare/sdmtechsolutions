@@ -115,6 +115,7 @@ const PortalWork = ({ kind }: { kind: PortalKind }) => {
         <div>
           <h1 className="text-3xl font-bold text-foreground font-display">{c.workLabel}</h1>
           <p className="text-muted-foreground mt-1">Open a {c.workOne}, do the work, then submit a file or link here.</p>
+          {kind === "intern" && <p className="mt-2 text-sm rounded-md border-l-4 border-orange-500 bg-orange-500/10 px-3 py-2"><b>All tasks are compulsory.</b> Submit each one before its deadline; reminders are sent by e-mail.</p>}
         </div>
 
         <div className="flex flex-wrap gap-2">

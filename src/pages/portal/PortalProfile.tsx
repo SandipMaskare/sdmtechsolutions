@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DOMAIN_OPTIONS, MODES, missingFields, durationText, COMPANY_LINKEDIN } from "@/lib/internProfile";
 import { Checkbox } from "@/components/ui/checkbox";
+import PaymentDueCard from "@/components/portal/PaymentDueCard";
 
 const empty = {
   full_name: "", phone: "", college: "", city: "", intern_id: "", internship_domain: "", internship_mode: "Virtual (Online)",
@@ -120,6 +121,8 @@ const PortalProfile = ({ kind }: { kind: PortalKind }) => {
               : "Keep your details up to date."}
           </p>
         </div>
+
+        <PaymentDueCard kind={isIntern ? "intern" : "employee"} />
 
         {missing.length > 0 ? (
           <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/20">
