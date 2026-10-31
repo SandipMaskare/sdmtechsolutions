@@ -3,7 +3,8 @@ import SubmissionCode from "@/components/admin/SubmissionCode";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, ExternalLink, FileText, Check, X, Clock, Eye } from "lucide-react";
+import { Search, ExternalLink, FileText, Check, X, Clock, Eye, Bot, Sparkles } from "lucide-react";
+import { callFunction } from "@/lib/functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +42,12 @@ interface Submission {
   reviewed_by: string | null;
   review_status: string | null;
   review_comments: string | null;
+  ai_verdict?: string | null;
+  ai_score?: number | null;
+  ai_feedback?: string | null;
+  ai_details?: any;
+  ai_checked_at?: string | null;
+  ai_applied?: boolean;
   task_title?: string;
   submitter_name?: string;
 }
@@ -53,6 +60,7 @@ const SubmissionsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [reviewComments, setReviewComments] = useState("");
+  const [aiBusy, setAiBusy] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -100,7 +108,35 @@ const SubmissionsPage = () => {
     setSubmissions(submissionsWithDetails);
   };
 
-  const handleReview = async (status: "approved" | "rejected") => {
+  const aiBadge = (x: Submission) => {
+    if (!x.ai_checked_at) return <span className="text-xs text-muted-foreground">Not checked</span>;
+    const v = x.ai_verdict;
+    const cls = v === "approve" ? "bg-green-600" : v === "reject" ? "bg-red-600" : "bg-amber-500";
+    const label = v === "approve" ? "Looks good" : v === "reject" ? "Not OK" : "Needs a look";
+    return <span className="inline-flex items-center gap-1"><Badge className={cls}>{label}</Badge><span className="text-xs text-muted-foreground">{x.ai_score}/100{x.ai_applied ? " · auto" : ""}</span></span>;
+  };
+
+  const runAi = async (sub: Submission) => {
+    setAiBusy(sub.id);
+    const { data, error } = await callFunction("submission-review", { mode: "check", submission_id: sub.id, apply: false });
+    setAiBusy(null);
+    if (error) return toast({ title: "AI check failed", description: error, variant: "destructive" });
+    toast({ title: `AI verdict: ${data?.verdict === "approve" ? "looks good" : data?.verdict === "reject" ? "not OK" : "needs your review"} (${data?.score}/100)` });
+    const { data: fresh } = await supabase.from("task_submissions").select("*").eq("id", sub.id).maybeSingle();
+    if (fresh) setSelectedSubmission({ ...sub, ...(fresh as any) });
+    fetchSubmissions();
+  };
+
+  const runSweep = async () => {
+    setAiBusy("all");
+    const { data, error } = await callFunction("submission-review", { mode: "sweep_now" });
+    setAiBusy(null);
+    if (error) return toast({ title: "AI check failed", description: error, variant: "destructive" });
+    toast({ title: `Checked ${data?.checked ?? 0} submission(s)`, description: data?.remaining ? `${data.remaining} more waiting; run it again.` : (data?.mode === "auto" ? "Clear verdicts were applied automatically." : "Verdicts are shown in the table; apply them from each review.") });
+    fetchSubmissions();
+  };
+
+  const handleReview = async (status: "approved" | "rejected", commentOverride?: string) => {
     if (!selectedSubmission) return;
 
     // Update submission
@@ -108,7 +144,7 @@ const SubmissionsPage = () => {
       .from("task_submissions")
       .update({
         review_status: status,
-        review_comments: reviewComments,
+        review_comments: commentOverride ?? reviewComments,
         reviewed_at: new Date().toISOString(),
         reviewed_by: user?.id,
       })
@@ -174,11 +210,14 @@ const SubmissionsPage = () => {
     <CRMLayout userRole="admin">
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground font-display">Submissions</h1>
-          <p className="text-muted-foreground mt-1">
-            Review and approve task submissions from employees
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground font-display">Submissions</h1>
+            <p className="text-muted-foreground mt-1">
+              Review and approve task submissions. The AI checker reads each submission and suggests (or, if you turn on auto mode, applies) approve or reject. You can always decide yourself.
+            </p>
+          </div>
+          <Button variant="secondary" disabled={aiBusy === "all"} onClick={() => void runSweep()}><Bot className="w-4 h-4 mr-2" />{aiBusy === "all" ? "Checking…" : "Check pending with AI"}</Button>
         </div>
 
         {/* Search */}
@@ -209,6 +248,7 @@ const SubmissionsPage = () => {
                   <TableHead>Submitted By</TableHead>
                   <TableHead>Submitted At</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>AI check</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -223,6 +263,7 @@ const SubmissionsPage = () => {
                       {new Date(submission.submitted_at).toLocaleString()}
                     </TableCell>
                     <TableCell>{getStatusBadge(submission.review_status)}</TableCell>
+                    <TableCell>{aiBadge(submission)}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -296,6 +337,34 @@ const SubmissionsPage = () => {
                     </div>
                   </div>
                 )}
+
+                <div className="rounded-xl border border-indigo-500/40 bg-indigo-500/5 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <Label className="text-indigo-600 flex items-center gap-1.5"><Sparkles className="h-4 w-4" /> AI auto-check</Label>
+                    <Button size="sm" variant="outline" disabled={aiBusy === selectedSubmission.id} onClick={() => void runAi(selectedSubmission)}>{aiBusy === selectedSubmission.id ? "Checking…" : selectedSubmission.ai_checked_at ? "Check again" : "Run AI check"}</Button>
+                  </div>
+                  {selectedSubmission.ai_checked_at ? (
+                    <div className="space-y-2 text-sm">
+                      <div>{aiBadge(selectedSubmission)}</div>
+                      {selectedSubmission.ai_details?.summary && <p>{selectedSubmission.ai_details.summary}</p>}
+                      {Array.isArray(selectedSubmission.ai_details?.requirements) && selectedSubmission.ai_details.requirements.length > 0 && (
+                        <ul className="space-y-0.5">{selectedSubmission.ai_details.requirements.map((r: any, i: number) => <li key={i} className="flex gap-2"><span className={r.met ? "text-green-600" : "text-red-600"}>{r.met ? "✓" : "✗"}</span><span>{r.item}</span></li>)}</ul>
+                      )}
+                      {Array.isArray(selectedSubmission.ai_details?.issues) && selectedSubmission.ai_details.issues.length > 0 && (
+                        <p className="text-xs text-muted-foreground">Issues: {selectedSubmission.ai_details.issues.join(" · ")}</p>
+                      )}
+                      {selectedSubmission.ai_feedback && <p className="text-xs rounded bg-muted p-2">{selectedSubmission.ai_feedback}</p>}
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setReviewComments(`[AI check, ${selectedSubmission.ai_score}/100] ${selectedSubmission.ai_feedback || ""}`)}>Use AI feedback as my comment</Button>
+                        {selectedSubmission.ai_verdict !== "needs_review" && selectedSubmission.review_status === "pending" && (
+                          <Button size="sm" onClick={() => { setReviewComments(`[AI check, ${selectedSubmission.ai_score}/100] ${selectedSubmission.ai_feedback || ""}`); void handleReview(selectedSubmission.ai_verdict === "approve" ? "approved" : "rejected", `[AI check, ${selectedSubmission.ai_score}/100] ${selectedSubmission.ai_feedback || ""}`); }}>
+                            Apply AI verdict ({selectedSubmission.ai_verdict === "approve" ? "approve" : "reject"})
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : <p className="text-xs text-muted-foreground">Not checked yet. The AI reads the zip/code/link and compares it with the task. It is a helper: you can approve or reject yourself below at any time.</p>}
+                </div>
 
                 {selectedSubmission.file_url && /\.(zip|py|js|mjs|html?|java|c|cpp|css|json|txt|ipynb)$/i.test(selectedSubmission.file_url) && (
                   <div className="rounded-xl border border-primary/30 p-3 space-y-2">
