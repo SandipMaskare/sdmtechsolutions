@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase as typed } from "@/integrations/supabase/client";
 import { callFunction } from "@/lib/functions";
@@ -12,8 +13,8 @@ import { callFunction } from "@/lib/functions";
 const supabase: any = typed;
 const KEY = "auto_tasks";
 
-interface Settings { enabled: boolean; deadline_days: number; reminder_days: number; pay_after_week: number; pay_amount: number | null; pay_title: string }
-const DEFAULTS: Settings = { enabled: false, deadline_days: 5, reminder_days: 2, pay_after_week: 3, pay_amount: null, pay_title: "Internship certificate & verification fee" };
+interface Settings { enabled: boolean; deadline_days: number; reminder_days: number; pay_after_week: number; pay_amount: number | null; pay_title: string; review_mode: "off" | "suggest" | "auto"; approve_min: number; reject_below: number }
+const DEFAULTS: Settings = { enabled: false, deadline_days: 5, reminder_days: 2, pay_after_week: 3, pay_amount: null, pay_title: "Internship certificate & verification fee", review_mode: "suggest", approve_min: 70, reject_below: 40 };
 
 /** Switch + settings for the automatic weekly task release, reminder e-mails and the week-3 payment request. */
 const AutoTasksPanel = () => {
@@ -67,6 +68,22 @@ const AutoTasksPanel = () => {
           <div><Label className="text-xs">Payment amount (₹)</Label><Input type="number" min={0} placeholder="e.g. 499" value={s.pay_amount ?? ""} onChange={(e) => setS({ ...s, pay_amount: e.target.value === "" ? null : Number(e.target.value) })} /></div>
         </div>
         <div><Label className="text-xs">Payment title</Label><Input value={s.pay_title} onChange={(e) => setS({ ...s, pay_title: e.target.value })} /></div>
+        <div className="rounded-lg border border-indigo-500/40 bg-indigo-500/5 p-3 space-y-2">
+          <Label className="font-semibold text-indigo-600">AI submission checker</Label>
+          <Select value={s.review_mode} onValueChange={(v) => setS({ ...s, review_mode: v as Settings["review_mode"] })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="off">Off: admin reviews everything</SelectItem>
+              <SelectItem value="suggest">Suggest: AI checks, admin applies the verdict</SelectItem>
+              <SelectItem value="auto">Auto: AI approves or rejects clear cases</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label className="text-xs">Approve at score ≥</Label><Input type="number" min={50} max={100} value={s.approve_min} onChange={(e) => setS({ ...s, approve_min: Number(e.target.value) })} /></div>
+            <div><Label className="text-xs">Reject below score</Label><Input type="number" min={0} max={60} value={s.reject_below} onChange={(e) => setS({ ...s, reject_below: Number(e.target.value) })} /></div>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Runs every 15 minutes on new submissions. Unclear cases (design files, very little code, middle scores) always stay for you to decide. In Auto mode the intern is e-mailed the result. You can still approve or reject manually at any time from Submissions.</p>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => void save(s)}><Save className="w-3.5 h-3.5 mr-1" /> Save settings</Button>
           <Button size="sm" variant="outline" disabled={!!busy} onClick={() => void run("preview")}><Eye className="w-3.5 h-3.5 mr-1" /> {busy === "preview" ? "Checking…" : "Preview (no e-mails)"}</Button>
